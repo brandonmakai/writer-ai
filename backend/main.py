@@ -1,15 +1,8 @@
-"""Writer AI backend — FastAPI application entrypoint."""
+"""Writer AI backend ASGI entrypoint for FastAPI CLI.
 
-from fastapi import FastAPI
+This module exposes the FastAPI `app` instance so that commands like
+`fastapi dev main.py` work as expected.
+"""
 
-app = FastAPI(
-    title="Writer AI API",
-    description="Backend for the Rewrite from Outline MVP.",
-    version="0.1.0",
-)
+from app.main import app
 
-
-@app.get("/")
-async def read_root() -> dict[str, str]:
-    """Root endpoint."""
-    return {"message": "Writer AI backend"}

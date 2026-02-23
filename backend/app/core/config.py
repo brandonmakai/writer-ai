@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     )
 
     cors_origins: list[str] = Field(
+        # TODO: remove before going into prod
         default_factory=lambda: ["http://localhost:3000"],
         description="Allowed CORS origins for the frontend.",
     )

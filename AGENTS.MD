@@ -156,3 +156,10 @@ Allows users to edit a chapter’s structure at a bullet-point level and automat
 ### Summary
 
 ✅ Ship one feature (“Rewrite from Outline”) that takes a pasted chapter + 3–5 structural bullets and returns a coherent refactor within seconds, with copy/download as primary validation signals.
+
+---
+
+### Commit and scope guidelines
+
+- **Scoped commits**: Prefer one logical change per commit. Do not combine unrelated changes in a single commit (e.g. one commit for app factory + config + routes). A single commit is appropriate when changes are directly related—for example, adding a new route, its documentation, and its unit test together.
+- **Scope names**: Use conventional scope names that match the folder/package. Examples: `feat(api): add JWT support`, `feat(core): add settings validation`, `feat(web): add login page`, `fix(app): correct CORS config`.

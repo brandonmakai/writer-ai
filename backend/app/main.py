@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI
 
+from app.api.routes.health import router as health_router
+
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -10,6 +12,10 @@ def create_app() -> FastAPI:
         description="Backend for the Rewrite from Outline MVP.",
         version="0.1.0",
     )
+
+    # Routers
+    app.include_router(health_router)
+
     return app
 
 

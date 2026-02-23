@@ -13,6 +13,12 @@ uv run fastapi dev main.py
 
 API docs: http://127.0.0.1:8000/docs
 
+## Endpoints
+
+| Method | Path     | Description                |
+|--------|----------|----------------------------|
+| GET    | `/health` | Healthcheck; returns `{"status": "ok"}` |
+
 ## Commands
 
 - `uv sync` — install dependencies

@@ -1,0 +1,38 @@
+"""Application configuration and settings."""
+
+from functools import lru_cache
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    env: str = Field(default="local", description="Application environment name.")
+    debug: bool = Field(default=True, description="Enable debug mode.")
+    log_level: str = Field(default="INFO", description="Root log level.")
+
+    # Gemini will likely be substituted for another LLM provider in the future
+    gemini_api_key: str | None = Field(
+        default=None,
+        description="API key for Gemini or compatible LLM provider.",
+    )
+    gemini_model: str = Field(
+        default="gemini-1.5-pro",
+        description="Default LLM model used for chapter rewrites.",
+    )
+
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000"],
+        description="Allowed CORS origins for the frontend.",
+    )
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Return cached application settings instance."""
+    return Settings()
+

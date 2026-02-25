@@ -1,6 +1,5 @@
 """Schemas for the Rewrite from Outline feature."""
 
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -9,16 +8,16 @@ class RewriteRequest(BaseModel):
     """User-provided chapter text and structural bullets."""
 
     chapter_text: str = Field(..., description="Original chapter text to be refactored.")
-    bullets: List[str] = Field(
+    bullets: list[str] = Field(
         ...,
         min_length=3,
         description="Structural edit bullets (3–8 recommended).",
     )
-    tone: Optional[str] = Field(
+    tone: str | None = Field(
         default=None,
         description="Optional tone guidance for the rewrite (e.g. darker, lighter, more humorous).",
     )
-    language: Optional[str] = Field(
+    language: str | None = Field(
         default=None,
         description="Optional target language for the rewrite (defaults to original).",
     )
@@ -26,13 +25,13 @@ class RewriteRequest(BaseModel):
 
 class SceneSummary(BaseModel):
     summary: str
-    characters: List[str]
+    characters: list[str]
     purpose: str
 
 
 class InternalStructure(BaseModel):
-    bullets: List[str]
-    scene_summaries: List[SceneSummary]
+    bullets: list[str]
+    scene_summaries: list[SceneSummary]
 
 
 class ChangeHighlight(BaseModel):
@@ -45,5 +44,5 @@ class RewriteResponse(BaseModel):
 
     chapter_text: str
     internal_structure: InternalStructure
-    change_highlights: List[ChangeHighlight]
+    change_highlights: list[ChangeHighlight]
 

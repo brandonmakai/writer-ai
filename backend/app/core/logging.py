@@ -1,7 +1,6 @@
 """Logging configuration utilities."""
 
 import logging
-from typing import Any
 
 from app.core.config import get_settings
 

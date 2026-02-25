@@ -13,7 +13,7 @@ router = APIRouter(tags=["rewrite"])
     "/rewrite/outline",
     response_model=RewriteResponse,
     summary="Refactor chapter from outline",
-    description="Takes chapter text and 3–8 structural bullets; returns refactored chapter with internal structure and change highlights.",
+    description="Chapter text + 3–8 bullets; returns refactored chapter and highlights.",
 )
 async def rewrite_from_outline(
     request: RewriteRequest,

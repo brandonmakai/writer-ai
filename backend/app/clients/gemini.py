@@ -1,8 +1,8 @@
 """Thin async client for the Gemini API"""
 
 import json
-from typing import Any
 from enum import StrEnum, auto
+from typing import Any
 
 import httpx
 
@@ -14,7 +14,8 @@ GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta"
 def _build_rewrite_prompt(request: RewriteRequest) -> str:
     """Build the prompt sent to Gemini for a rewrite."""
     parts = [
-        "You are a fiction editor. Refactor the following chapter to match the given structural bullets.",
+        "You are a fiction editor. Refactor the following chapter to match the given "
+        "structural bullets.",
         "Preserve tone, character arcs, and consistency.",
         "",
         "## Chapter (original)",
@@ -31,7 +32,10 @@ def _build_rewrite_prompt(request: RewriteRequest) -> str:
         parts.append("")
         parts.append(f"Target language: {request.language.strip()}")
     parts.append("")
-    parts.append("Return a JSON object with keys: chapter_text, internal_structure (bullets, scene_summaries), change_highlights.")
+    parts.append(
+        "Return a JSON object with keys: chapter_text, internal_structure "
+        "(bullets, scene_summaries), change_highlights."
+    )
     return "\n".join(parts)
 
 
@@ -52,7 +56,7 @@ def _check_finish_reason(candidate: dict[str, Any]) -> None:
     """Raise if the candidate was blocked or failed."""
     finish_reason = (candidate.get("finishReason") or candidate.get("finish_reason") or "").upper()
     reasons = tuple(r.value for r in GeminiFinishReason)
-    max_tokens_reason = GeminiFinishReason.MAX_TOKENS.value() 
+    max_tokens_reason = GeminiFinishReason.MAX_TOKENS.value 
     
     if finish_reason in reasons:
         safety_ratings = candidate.get("safetyRatings") or candidate.get("safety_ratings") or []
@@ -101,7 +105,9 @@ class GeminiClient:
             candidates = body.get("candidates") or []
             if not candidates:
                 prompt_feedback = body.get("promptFeedback") or body.get("prompt_feedback") or {}
-                block_reason = prompt_feedback.get("blockReason") or prompt_feedback.get("block_reason")
+                block_reason = (
+                    prompt_feedback.get("blockReason") or prompt_feedback.get("block_reason")
+                )
                 if block_reason:
                     raise ValueError(f"Gemini request blocked: {block_reason}")
                 raise ValueError("No candidates in Gemini response")

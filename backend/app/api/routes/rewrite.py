@@ -10,7 +10,7 @@ router = APIRouter(tags=["rewrite"])
 
 
 @router.post(
-    "/rewrite/outline",
+    "/rewrite",
     response_model=RewriteResponse,
     summary="Refactor chapter from outline",
     description="Chapter text + 3–8 bullets; returns refactored chapter and highlights.",

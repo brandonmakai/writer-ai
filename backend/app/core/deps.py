@@ -4,7 +4,7 @@ from fastapi import Depends
 
 from app.clients.gemini import GeminiClient
 from app.core.config import Settings, get_settings
-from app.domain.services import RewriteService
+from app.domain.services import OutlineService, RewriteService
 
 
 def get_app_settings() -> Settings:
@@ -17,6 +17,13 @@ def get_gemini_client(settings: Settings = Depends(get_app_settings)) -> GeminiC
     return GeminiClient(settings)
 
 
+def get_outline_service(
+    client: GeminiClient = Depends(get_gemini_client),
+) -> OutlineService:
+    """Return the outline service with injected Gemini client."""
+    return OutlineService(client)
+
+
 def get_rewrite_service(
     client: GeminiClient = Depends(get_gemini_client),
 ) -> RewriteService:
@@ -25,4 +32,3 @@ def get_rewrite_service(
 
 
 SettingsDep = Depends(get_app_settings)
-

@@ -23,7 +23,7 @@ backend/
 
 ## Chapter endpoints
 
-- **Outline:** `POST /api/v1/chapter/outline` — chapter text (+ optional tone, language) → 3–8 structural bullets (implemented in next step).
+- **Outline:** `POST /api/v1/chapter/outline` — chapter text (+ optional tone, language) → 3–8 structural bullets. Request → route → OutlineService → GeminiClient.outline_chapter → OutlineResponse.
 - **Rewrite:** `POST /api/v1/chapter/rewrite` — chapter text + bullets (+ optional tone, language) → refactored chapter and highlights.
 
 ## Rewrite-from-Outline Flow
@@ -39,9 +39,11 @@ backend/
 
 | Change | Location |
 |--------|----------|
-| Prompt text / instructions | `app/clients/gemini.py` → `_build_rewrite_prompt` |
+| Outline prompt (chapter → bullets) | `app/clients/gemini.py` → `_build_outline_prompt` |
+| Rewrite prompt / instructions | `app/clients/gemini.py` → `_build_rewrite_prompt` |
 | LLM model or API config | `app/core/config.py` (e.g. `gemini_model`), then client uses it |
-| Request/response shape | `app/schemas/rewrite.py`; keep in sync with docs/LLM_SPEC.md |
+| Request/response shape (rewrite) | `app/schemas/rewrite.py`; keep in sync with docs/LLM_SPEC.md |
+| Request/response shape (outline) | `app/schemas/outline.py` |
 | New endpoints | `app/api/routes/`, then register in `app/main.py` |
 | New external APIs | `app/clients/`, inject via `app/core/deps.py` |
 

@@ -18,4 +18,3 @@ def configure_logging() -> None:
 def get_logger(name: str) -> logging.Logger:
     """Get a configured logger."""
     return logging.getLogger(name)
-

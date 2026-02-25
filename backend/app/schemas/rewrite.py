@@ -1,6 +1,5 @@
 """Schemas for the Rewrite from Outline feature."""
 
-
 from pydantic import BaseModel, Field
 
 
@@ -45,4 +44,3 @@ class RewriteResponse(BaseModel):
     chapter_text: str
     internal_structure: InternalStructure
     change_highlights: list[ChangeHighlight]
-

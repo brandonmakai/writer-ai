@@ -1,7 +1,19 @@
-"""Rewrite-from-outline service: delegates to Gemini client."""
+"""Chapter services: outline extraction and rewrite (delegate to Gemini client)."""
 
 from app.clients.gemini import GeminiClient
+from app.schemas.outline import OutlineRequest, OutlineResponse
 from app.schemas.rewrite import RewriteRequest, RewriteResponse
+
+
+class OutlineService:
+    """Orchestrates chapter-to-bullets using the configured LLM client."""
+
+    def __init__(self, client: GeminiClient) -> None:
+        self._client = client
+
+    async def outline(self, request: OutlineRequest) -> OutlineResponse:
+        """Split chapter text into 3–8 structural bullets."""
+        return await self._client.outline_chapter(request)
 
 
 class RewriteService:

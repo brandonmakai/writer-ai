@@ -48,7 +48,7 @@ def test_rewrite_from_outline_returns_200_and_structure() -> None:
     response = client.post(
         "/api/v1/chapter/rewrite",
         json={
-            "chapter_text": "John met Maria. They argued.",
+            "chapter": {"chapter_text": "John met Maria. They argued."},
             "bullets": [
                 "John meets Maria.",
                 "Tension rises.",

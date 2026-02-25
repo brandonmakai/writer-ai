@@ -32,7 +32,7 @@ client = TestClient(app)
 def test_chapter_to_outline_returns_200_and_bullets() -> None:
     response = client.post(
         "/api/v1/chapter/outline",
-        json={"chapter_text": "John met Maria. They argued. She left."},
+        json={"chapter": {"chapter_text": "John met Maria. They argued. She left."}},
     )
     assert response.status_code == 200
     data = response.json()

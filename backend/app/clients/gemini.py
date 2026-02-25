@@ -11,6 +11,7 @@ from app.schemas.outline import OutlineRequest, OutlineResponse
 from app.schemas.rewrite import RewriteRequest, RewriteResponse
 
 GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta"
+TIMEOUT_SECONDS = 60.0
 
 
 def _build_outline_prompt(request: OutlineRequest) -> str:
@@ -21,14 +22,14 @@ def _build_outline_prompt(request: OutlineRequest) -> str:
         "Each bullet should be one short sentence. Return only valid JSON.",
         "",
         "## Chapter",
-        request.chapter_text.strip(),
+        request.chapter.chapter_text.strip(),
     ]
-    if request.tone:
+    if request.chapter.tone:
         parts.append("")
-        parts.append(f"Tone context: {request.tone.strip()}")
-    if request.language:
+        parts.append(f"Tone context: {request.chapter.tone.strip()}")
+    if request.chapter.language:
         parts.append("")
-        parts.append(f"Language: {request.language.strip()}")
+        parts.append(f"Language: {request.chapter.language.strip()}")
     parts.append("")
     parts.append('Return a JSON object with a single key "bullets" (array of 3–8 strings).')
     return "\n".join(parts)
@@ -48,18 +49,18 @@ def _build_rewrite_prompt(request: RewriteRequest) -> str:
         "Preserve tone, character arcs, and consistency.",
         "",
         "## Chapter (original)",
-        request.chapter_text.strip(),
+        request.chapter.chapter_text.strip(),
         "",
         "## Structural bullets (refactor to match these)",
     ]
     for i, b in enumerate(request.bullets, 1):
         parts.append(f"{i}. {b.strip()}")
-    if request.tone:
+    if request.chapter.tone:
         parts.append("")
-        parts.append(f"Tone guidance: {request.tone.strip()}")
-    if request.language:
+        parts.append(f"Tone guidance: {request.chapter.tone.strip()}")
+    if request.chapter.language:
         parts.append("")
-        parts.append(f"Target language: {request.language.strip()}")
+        parts.append(f"Target language: {request.chapter.language.strip()}")
     parts.append("")
     parts.append(
         "Return a JSON object with keys: chapter_text, internal_structure "
@@ -98,6 +99,29 @@ def _check_finish_reason(candidate: dict[str, Any]) -> None:
         raise ValueError(f"Gemini response truncated ({max_tokens_reason})")
 
 
+def _extract_response_text(body: dict[str, Any]) -> str:
+    """Get the first candidate's text from a generateContent response. Raises on missing/blocked."""
+    candidates = body.get("candidates") or []
+    if not candidates:
+        prompt_feedback = body.get("promptFeedback") or body.get("prompt_feedback") or {}
+        block_reason = prompt_feedback.get("blockReason") or prompt_feedback.get("block_reason")
+        if block_reason:
+            raise ValueError(f"Gemini request blocked: {block_reason}")
+        raise ValueError("No candidates in Gemini response")
+
+    candidate = candidates[0]
+    _check_finish_reason(candidate)
+    content = candidate.get("content") or {}
+    parts = content.get("parts") or []
+    if not parts:
+        raise ValueError("No parts in Gemini response")
+
+    text = (parts[0].get("text") or "").strip()
+    if not text:
+        raise ValueError("Empty text in Gemini response")
+    return text
+
+
 class GeminiClient:
     """Async client for Gemini generateContent REST API."""
 
@@ -113,16 +137,18 @@ class GeminiClient:
 
         prompt = _build_rewrite_prompt(request)
         url = f"{self._base}/models/{self._model}:generateContent"
+
+        MAX_OUTPUT_TOKENS = 8192
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
                 "responseMimeType": "application/json",
                 "responseSchema": RewriteResponse.model_json_schema(),
-                "maxOutputTokens": 8192,
+                "maxOutputTokens": MAX_OUTPUT_TOKENS,
             },
         }
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
             resp = await client.post(
                 url,
                 headers={"x-goog-api-key": self._api_key},
@@ -132,28 +158,7 @@ class GeminiClient:
 
         body = resp.json()
         try:
-            candidates = body.get("candidates") or []
-            if not candidates:
-                prompt_feedback = body.get("promptFeedback") or body.get("prompt_feedback") or {}
-                block_reason = prompt_feedback.get("blockReason") or prompt_feedback.get(
-                    "block_reason"
-                )
-                if block_reason:
-                    raise ValueError(f"Gemini request blocked: {block_reason}")
-                raise ValueError("No candidates in Gemini response")
-
-            candidate = candidates[0]
-            _check_finish_reason(candidate)
-            content = candidate.get("content") or {}
-
-            parts = content.get("parts") or []
-            if not parts:
-                raise ValueError("No parts in Gemini response")
-
-            text = (parts[0].get("text") or "").strip()
-            if not text:
-                raise ValueError("Empty text in Gemini response")
-
+            text = _extract_response_text(body)
             return _parse_rewrite_response(text)
         except (KeyError, IndexError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse Gemini response: {e}") from e
@@ -164,15 +169,17 @@ class GeminiClient:
             raise ValueError("gemini_api_key is not set")
         prompt = _build_outline_prompt(request)
         url = f"{self._base}/models/{self._model}:generateContent"
+
+        MAX_OUTPUT_TOKENS = 1024
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
                 "responseMimeType": "application/json",
                 "responseSchema": OutlineResponse.model_json_schema(),
-                "maxOutputTokens": 1024,
+                "maxOutputTokens": MAX_OUTPUT_TOKENS,
             },
         }
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
             resp = await client.post(
                 url,
                 headers={"x-goog-api-key": self._api_key},
@@ -181,24 +188,7 @@ class GeminiClient:
             resp.raise_for_status()
         body = resp.json()
         try:
-            candidates = body.get("candidates") or []
-            if not candidates:
-                prompt_feedback = body.get("promptFeedback") or body.get("prompt_feedback") or {}
-                block_reason = prompt_feedback.get("blockReason") or prompt_feedback.get(
-                    "block_reason"
-                )
-                if block_reason:
-                    raise ValueError(f"Gemini request blocked: {block_reason}")
-                raise ValueError("No candidates in Gemini response")
-            candidate = candidates[0]
-            _check_finish_reason(candidate)
-            content = candidate.get("content") or {}
-            parts = content.get("parts") or []
-            if not parts:
-                raise ValueError("No parts in Gemini response")
-            text = (parts[0].get("text") or "").strip()
-            if not text:
-                raise ValueError("Empty text in Gemini response")
+            text = _extract_response_text(body)
             return _parse_outline_response(text)
         except (KeyError, IndexError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse Gemini response: {e}") from e

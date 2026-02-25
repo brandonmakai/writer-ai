@@ -2,19 +2,14 @@
 
 from pydantic import BaseModel, Field
 
+from app.schemas.common import STRUCTURAL_BULLETS_MAX, STRUCTURAL_BULLETS_MIN, ChapterBase
+
 
 class OutlineRequest(BaseModel):
-    """Chapter text and optional tone/language for outline extraction."""
+    """Request body for outline extraction: has chapter context."""
 
-    chapter_text: str = Field(..., description="Chapter text to split into structural bullets.")
-    tone: str | None = Field(
-        default=None,
-        description="Optional tone guidance (e.g. darker, lighter, more humorous).",
-    )
-    language: str | None = Field(
-        default=None,
-        description="Optional target language for the outline (defaults to original).",
-    )
+    chapter: ChapterBase = Field(..., description="Chapter text and optional tone/language.")
+    model_config = {"extra": "forbid"}
 
 
 class OutlineResponse(BaseModel):
@@ -22,7 +17,7 @@ class OutlineResponse(BaseModel):
 
     bullets: list[str] = Field(
         ...,
-        min_length=3,
-        max_length=8,
+        min_length=STRUCTURAL_BULLETS_MIN,
+        max_length=STRUCTURAL_BULLETS_MAX,
         description="Structural bullet points summarizing the chapter.",
     )

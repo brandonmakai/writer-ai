@@ -2,23 +2,17 @@
 
 from pydantic import BaseModel, Field
 
+from app.schemas.common import STRUCTURAL_BULLETS_MIN, ChapterBase
+
 
 class RewriteRequest(BaseModel):
-    """User-provided chapter text and structural bullets."""
+    """User-provided chapter context and structural bullets."""
 
-    chapter_text: str = Field(..., description="Original chapter text to be refactored.")
+    chapter: ChapterBase = Field(..., description="Chapter text and optional tone/language.")
     bullets: list[str] = Field(
         ...,
-        min_length=3,
+        min_length=STRUCTURAL_BULLETS_MIN,
         description="Structural edit bullets (3–8 recommended).",
-    )
-    tone: str | None = Field(
-        default=None,
-        description="Optional tone guidance for the rewrite (e.g. darker, lighter, more humorous).",
-    )
-    language: str | None = Field(
-        default=None,
-        description="Optional target language for the rewrite (defaults to original).",
     )
 
 

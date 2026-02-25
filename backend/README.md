@@ -22,6 +22,10 @@ API docs: http://127.0.0.1:8000/docs
 
 ## Commands
 
-- `uv sync` — install dependencies
+- `uv sync` — install dependencies (include dev: `uv sync --group dev`)
 - `uv run fastapi dev main.py` — run dev server with reload
 - `uv run fastapi run main.py` — run production server
+- `uv run pytest` — run tests
+- `uv run ruff check app tests` — lint
+- `uv run ruff format app tests` — format
+- `uv run mypy app` — type check

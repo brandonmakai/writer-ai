@@ -1,0 +1,7 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": [],
+    "python.defaultInterpreterPath": "backend/.venv/bin/python",
+    "python.analysis.extraPaths": ["./backend"],
+    "python.analysis.typeCheckingMode": "basic"
+}

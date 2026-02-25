@@ -7,6 +7,7 @@ from app.main import app
 from app.schemas.rewrite import (
     ChangeHighlight,
     InternalStructure,
+    RewriteRequest,
     RewriteResponse,
     SceneSummary,
 )
@@ -15,7 +16,7 @@ from app.schemas.rewrite import (
 class MockRewriteService:
     """Returns a fixed response without calling Gemini."""
 
-    async def rewrite(self, request):  # noqa: ARG002
+    async def rewrite(self, request: RewriteRequest) -> RewriteResponse:  # noqa: ARG002
         return RewriteResponse(
             chapter_text="Refactored chapter text.",
             internal_structure=InternalStructure(
@@ -34,7 +35,7 @@ class MockRewriteService:
         )
 
 
-def _override_get_rewrite_service():
+def _override_get_rewrite_service() -> MockRewriteService:
     return MockRewriteService()
 
 

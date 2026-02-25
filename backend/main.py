@@ -4,5 +4,4 @@ This module exposes the FastAPI `app` instance so that commands like
 `fastapi dev main.py` work as expected.
 """
 
-from app.main import app
-
+from app.main import app  # noqa: F401 — exposed for uvicorn / fastapi dev

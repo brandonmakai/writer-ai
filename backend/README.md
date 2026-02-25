@@ -19,7 +19,7 @@ API docs: http://127.0.0.1:8000/docs
 |--------|-------------------------------|-----------------------------------------------------------------------------|
 | GET    | `/health`                     | Healthcheck; returns `{"status": "ok"}`.                                   |
 | POST   | `/api/v1/chapter/outline`     | Chapter text (+ optional tone, language); returns 3–8 structural bullets.  |
-| POST   | `/api/v1/chapter/rewrite`     | Refactor chapter from outline; body: `chapter_text`, `bullets` (3–8); returns refactored chapter, internal structure, change highlights. |
+| POST   | `/api/v1/chapter/rewrite`     | Refactor chapter from outline; body: `chapter` (e.g. `{ text, tone?, language? }`), `bullets` (3–8); returns refactored chapter, internal structure, change highlights. |
 
 ## Commands
 

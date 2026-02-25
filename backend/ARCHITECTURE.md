@@ -29,7 +29,7 @@ backend/
 ## Rewrite-from-Outline Flow
 
 1. `POST /api/v1/chapter/rewrite` → `app.api.routes.chapter.rewrite_from_outline`
-2. Request body is validated as `RewriteRequest` (chapter: { chapter_text, optional tone/language }, bullets).
+2. Request body is validated as `RewriteRequest` (chapter: { text, optional tone/language }, bullets).
 3. Route calls `RewriteService.rewrite(request)` (injected via FastAPI Depends).
 4. **RewriteService** calls `GeminiClient.rewrite_chapter(request)`.
 5. **GeminiClient** builds the prompt (`_build_rewrite_prompt`), calls Gemini `generateContent`, parses JSON into `RewriteResponse`.

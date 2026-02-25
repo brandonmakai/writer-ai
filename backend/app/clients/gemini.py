@@ -22,7 +22,7 @@ def _build_outline_prompt(request: OutlineRequest) -> str:
         "Each bullet should be one short sentence. Return only valid JSON.",
         "",
         "## Chapter",
-        request.chapter.chapter_text.strip(),
+        request.chapter.text.strip(),
     ]
     if request.chapter.tone:
         parts.append("")
@@ -49,7 +49,7 @@ def _build_rewrite_prompt(request: RewriteRequest) -> str:
         "Preserve tone, character arcs, and consistency.",
         "",
         "## Chapter (original)",
-        request.chapter.chapter_text.strip(),
+        request.chapter.text.strip(),
         "",
         "## Structural bullets (refactor to match these)",
     ]

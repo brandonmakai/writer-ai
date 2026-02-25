@@ -10,7 +10,7 @@ STRUCTURAL_BULLETS_MAX = 8
 class ChapterBase(BaseModel):
     """Shared chapter text and optional tone/language."""
 
-    chapter_text: str = Field(..., description="Chapter text.")
+    text: str = Field(..., description="Chapter text.")
     tone: str | None = Field(
         default=None,
         description="Optional tone guidance (e.g. darker, lighter, more humorous).",

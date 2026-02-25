@@ -1,0 +1,54 @@
+# LLM Output Contract — Rewrite from Outline
+
+The model MUST return structured JSON in the following format.
+
+## Required Output Schema
+
+{
+  "chapter_text": "string",
+  "internal_structure": {
+    "bullets": ["string"],
+    "scene_summaries": [
+      {
+        "summary": "string",
+        "characters": ["string"],
+        "purpose": "string"
+      }
+    ]
+  },
+  "change_highlights": [
+    {
+      "original": "string",
+      "updated": "string"
+    }
+  ]
+}
+
+---
+
+## Field Definitions
+
+- chapter_text → Final refactored chapter displayed to the user
+- internal_structure → Structural scaffolding for future iterations
+- change_highlights → Mapping between original and updated sections
+
+---
+
+## Prompt Template
+
+{
+  "input_chapter": "{user_chapter}",
+  "structural_edits": ["{bullet_1}", "{bullet_2}", "{bullet_3}"],
+  "output_format": { ...schema above... },
+  "instructions": "Refactor the chapter coherently according to the bullets. Preserve tone, character arcs, and consistency. Return JSON only."
+}
+
+---
+
+## Hard Rules
+
+- Must return valid JSON
+- Must not include markdown
+- Must not include explanation text outside JSON
+- Must preserve narrative coherence
+- Must align rewritten content to provided structural edits

@@ -21,6 +21,11 @@ backend/
 - **RewriteService** delegates to **GeminiClient**; no prompt building in the route.
 - **Schemas** in `app/schemas/rewrite.py` match the contract in docs/LLM_SPEC.md.
 
+## Chapter endpoints
+
+- **Outline:** `POST /api/v1/chapter/outline` — chapter text (+ optional tone, language) → 3–8 structural bullets (implemented in next step).
+- **Rewrite:** `POST /api/v1/chapter/rewrite` — chapter text + bullets (+ optional tone, language) → refactored chapter and highlights.
+
 ## Rewrite-from-Outline Flow
 
 1. `POST /api/v1/chapter/rewrite` → `app.api.routes.rewrite.rewrite_from_outline`

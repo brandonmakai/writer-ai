@@ -15,9 +15,10 @@ API docs: http://127.0.0.1:8000/docs
 
 ## Endpoints
 
-| Method | Path     | Description                |
-|--------|----------|----------------------------|
-| GET    | `/health` | Healthcheck; returns `{"status": "ok"}` |
+| Method | Path                          | Description                                                                 |
+|--------|-------------------------------|-----------------------------------------------------------------------------|
+| GET    | `/health`                     | Healthcheck; returns `{"status": "ok"}`.                                   |
+| POST   | `/api/v1/rewrite-from-outline` | Refactor chapter from outline; body: `chapter_text`, `bullets` (3–8); returns refactored chapter, internal structure, change highlights. |
 
 ## Commands
 

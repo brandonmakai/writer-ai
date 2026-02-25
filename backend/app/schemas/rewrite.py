@@ -11,7 +11,7 @@ class RewriteRequest(BaseModel):
     chapter_text: str = Field(..., description="Original chapter text to be refactored.")
     bullets: List[str] = Field(
         ...,
-        min_items=3,
+        min_length=3,
         description="Structural edit bullets (3–8 recommended).",
     )
     tone: Optional[str] = Field(

@@ -1,0 +1,98 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { BookOpen, ArrowLeft, Sparkles } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+interface EditorHeaderProps {
+  onBack: () => void
+  wordCount: number
+  bulletCount: number
+  highlightCount: number
+}
+
+export function EditorHeader({
+  onBack,
+  wordCount,
+  bulletCount,
+  highlightCount,
+}: EditorHeaderProps) {
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="flex items-center gap-3 px-5 py-3 border-b border-border/60 bg-card/40 backdrop-blur-xl"
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBack}
+        className="text-muted-foreground hover:text-foreground h-8 px-2.5 gap-1.5"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="size-3.5" />
+        <span className="text-xs hidden sm:inline">Back</span>
+      </Button>
+
+      <div className="h-4 w-px bg-border/60" />
+
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center size-7 rounded-lg bg-primary/10 border border-primary/20">
+          <BookOpen className="size-3.5 text-primary" />
+        </div>
+        <span className="text-sm font-semibold tracking-tight text-foreground">
+          PlotFlow
+        </span>
+      </div>
+
+      <div className="flex-1" />
+
+      <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
+          <span className="tabular-nums">{wordCount} words</span>
+          <span className="text-border">|</span>
+          <span className="tabular-nums">{bulletCount} beats</span>
+          {highlightCount > 0 && (
+            <>
+              <span className="text-border">|</span>
+              <motion.span
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-1 tabular-nums"
+                style={{ color: "oklch(0.78 0.14 75)" }}
+              >
+                {highlightCount} changes
+              </motion.span>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {highlightCount > 0 ? (
+            <>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="size-1.5 rounded-full"
+                style={{ background: "oklch(0.78 0.14 75)" }}
+              />
+              <span
+                className="text-[11px] font-medium"
+                style={{ color: "oklch(0.78 0.14 75)" }}
+              >
+                Refactored
+              </span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-3 text-emerald-400/70" />
+              <span className="text-[11px] text-emerald-400/70 font-medium">
+                Ready
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.header>
+  )
+}

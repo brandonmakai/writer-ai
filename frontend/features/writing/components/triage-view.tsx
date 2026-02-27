@@ -279,45 +279,50 @@ export function TriageView({
                           key={bullet.id}
                           value={bullet}
                           id={bullet.id}
-                          className="flex items-center gap-3 rounded-xl border border-border/50 bg-secondary/20 p-3"
+                          className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl border border-border/50 bg-secondary/20 p-3"
                         >
-                          <span
-                            className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex-shrink-0"
-                            style={{
-                              background: tagColors[globalIndex % tagColors.length].bg,
-                              color: tagColors[globalIndex % tagColors.length].text,
-                              border: `1px solid ${tagColors[globalIndex % tagColors.length].border}`,
-                              padding: "4px 8px",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            {String(globalIndex + 1).padStart(2, "0")}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-foreground/90 truncate">
-                              {bullet.label || "Untitled beat"}
-                            </div>
-                            <div className="text-xs text-muted-foreground/70 line-clamp-1">
-                              {bullet.content || "—"}
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0 w-full sm:flex-1">
+                            <span
+                              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex-shrink-0"
+                              style={{
+                                background: tagColors[globalIndex % tagColors.length].bg,
+                                color: tagColors[globalIndex % tagColors.length].text,
+                                border: `1px solid ${tagColors[globalIndex % tagColors.length].border}`,
+                                padding: "4px 8px",
+                                borderRadius: "6px",
+                              }}
+                            >
+                              {String(globalIndex + 1).padStart(2, "0")}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-foreground/90 truncate">
+                                {bullet.label || "Untitled beat"}
+                              </div>
+                              <div className="text-xs text-muted-foreground/70 line-clamp-2 sm:line-clamp-1">
+                                {bullet.content || "—"}
+                              </div>
                             </div>
                           </div>
-                          {onSuggestedChange && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs flex-shrink-0"
-                              onClick={() => onSuggestedChange(bullet.id)}
+                          <div className="flex items-center justify-end sm:justify-start gap-1.5 flex-shrink-0">
+                            {onSuggestedChange && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs min-h-9 touch-manipulation"
+                                onClick={() => onSuggestedChange(bullet.id)}
+                              >
+                                <span className="sm:hidden">Set</span>
+                                <span className="hidden sm:inline">Set as suggested</span>
+                              </Button>
+                            )}
+                            <button
+                              onClick={() => deleteBullet(bullet.id)}
+                              className="size-9 sm:size-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-secondary/60 flex-shrink-0 touch-manipulation"
+                              aria-label="Delete beat"
                             >
-                              Set as suggested
-                            </Button>
-                          )}
-                          <button
-                            onClick={() => deleteBullet(bullet.id)}
-                            className="size-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-secondary/60 flex-shrink-0"
-                            aria-label="Delete beat"
-                          >
-                            <X className="size-3.5" />
-                          </button>
+                              <X className="size-3.5" />
+                            </button>
+                          </div>
                         </Reorder.Item>
                       )
                     })}

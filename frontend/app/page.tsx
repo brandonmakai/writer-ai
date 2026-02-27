@@ -20,6 +20,7 @@ export default function WriterAIPage() {
     chapterText: warp.chapterText,
     setChapterText: warp.setChapterText,
     setHighlights: warp.setHighlights,
+    setBullets: warp.setBullets,
   })
 
   return (

@@ -95,7 +95,11 @@ describe("fetchRewrite", () => {
     const resBody = {
       chapter_text: "New chapter text.",
       internal_structure: {
-        bullets: ["B1", "B2", "B3"],
+        bullets: [
+          { content: "B1", anchor_text: "Anchor one." },
+          { content: "B2", anchor_text: "Anchor two." },
+          { content: "B3", anchor_text: "Anchor three." },
+        ],
         scene_summaries: [],
       },
       change_highlights: [

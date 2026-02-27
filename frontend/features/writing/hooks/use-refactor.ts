@@ -18,6 +18,7 @@ export interface UseRefactorOptions {
   chapterText: string
   setChapterText: (text: string) => void
   setHighlights: (highlights: ChangeHighlight[]) => void
+  setBullets: (bullets: StoryBullet[]) => void
 }
 
 export function useRefactor({
@@ -25,6 +26,7 @@ export function useRefactor({
   chapterText,
   setChapterText,
   setHighlights,
+  setBullets,
 }: UseRefactorOptions) {
   const [isRefactoring, setIsRefactoring] = useState(false)
   const [refactorProgress, setRefactorProgress] = useState(0)
@@ -58,6 +60,13 @@ export function useRefactor({
       setHighlights(
         res.change_highlights.map((h) => ({ updated: h.updated, original: h.original }))
       )
+      const mappedBullets: StoryBullet[] = res.internal_structure.bullets.map((b, i) => ({
+        id: crypto.randomUUID(),
+        label: `Beat ${i + 1}`,
+        content: b.content,
+        anchor_text: b.anchor_text,
+      }))
+      setBullets(mappedBullets)
       setRefactorProgress(100)
     } catch (err) {
       console.error("Rewrite API error:", err)
@@ -66,7 +75,7 @@ export function useRefactor({
       setIsRefactoring(false)
       setRefactorProgress(0)
     }
-  }, [isRefactoring, bullets, chapterText, setChapterText, setHighlights])
+  }, [isRefactoring, bullets, chapterText, setChapterText, setHighlights, setBullets])
 
   return {
     isRefactoring,

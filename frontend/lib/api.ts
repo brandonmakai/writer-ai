@@ -44,11 +44,11 @@ export interface ChangeHighlightDto {
   updated: string;
 }
 
-/** Response from rewrite endpoint. */
+/** Response from rewrite endpoint (internal_structure.bullets mirror BulletWithAnchor). */
 export interface RewriteResponse {
   chapter_text: string;
   internal_structure: {
-    bullets: string[];
+    bullets: BulletWithAnchor[];
     scene_summaries: Array<{
       summary: string;
       characters: string[];

@@ -32,6 +32,7 @@ export default function WriterAIPage() {
   const [highlights, setHighlights] = useState<ChangeHighlight[]>([])
   const [preRefactorText, setPreRefactorText] = useState("")
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [showTethers, setShowTethers] = useState(true)
   const workspaceRef = useRef<HTMLDivElement>(null)
 
   /* ── LANDING -> TRIAGE ── */
@@ -240,6 +241,8 @@ export default function WriterAIPage() {
                   onBulletsChange={setBullets}
                   activeBulletIndex={hoveredIndex}
                   onBulletHover={setHoveredIndex}
+                  showTethers={showTethers}
+                  onToggleTethers={() => setShowTethers((v) => !v)}
                 />
               </motion.div>
 
@@ -248,6 +251,7 @@ export default function WriterAIPage() {
                 bulletCount={bullets.length}
                 activeBulletIndex={hoveredIndex}
                 isRefactoring={isRefactoring}
+                showTethers={showTethers}
               />
             </div>
 

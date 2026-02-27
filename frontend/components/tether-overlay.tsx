@@ -16,6 +16,8 @@ interface TetherOverlayProps {
   bulletCount: number
   activeBulletIndex: number | null
   isRefactoring: boolean
+  /** When false, overlay is not rendered. */
+  showTethers: boolean
 }
 
 export function TetherOverlay({
@@ -23,6 +25,7 @@ export function TetherOverlay({
   bulletCount,
   activeBulletIndex,
   isRefactoring,
+  showTethers,
 }: TetherOverlayProps) {
   const [lines, setLines] = useState<TetherLine[]>([])
   const [dims, setDims] = useState({ w: 0, h: 0 })
@@ -82,7 +85,7 @@ export function TetherOverlay({
     measure()
   }, [bulletCount, activeBulletIndex, measure])
 
-  if (lines.length === 0 || dims.w === 0) return null
+  if (!showTethers || lines.length === 0 || dims.w === 0) return null
 
   return (
     <svg
@@ -135,7 +138,7 @@ export function TetherOverlay({
 
           const pathD = `M ${line.x1} ${line.y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${line.x2} ${line.y2}`
 
-          const baseOpacity = isRefactoring ? 0.45 : isActive ? 0.65 : 0.12
+          const baseOpacity = isRefactoring ? 0.45 : isActive ? 0.65 : 0
           const strokeColor = isActive
             ? "oklch(0.75 0.14 250)"
             : isRefactoring
@@ -207,7 +210,7 @@ export function TetherOverlay({
                 }
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{
-                  opacity: isRefactoring ? 0.6 : isActive ? 0.7 : 0.15,
+                  opacity: isRefactoring ? 0.6 : isActive ? 0.7 : 0,
                   scale: 1,
                   ...(isRefactoring
                     ? { r: [2, 4, 2], opacity: [0.4, 0.8, 0.4] }
@@ -234,7 +237,7 @@ export function TetherOverlay({
                 }
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{
-                  opacity: isRefactoring ? 0.6 : isActive ? 0.7 : 0.15,
+                  opacity: isRefactoring ? 0.6 : isActive ? 0.7 : 0,
                   scale: 1,
                   ...(isRefactoring
                     ? { r: [2, 4, 2], opacity: [0.4, 0.8, 0.4] }

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { motion, AnimatePresence, Reorder } from "framer-motion"
-import { GripVertical, Plus, X } from "lucide-react"
+import { GripVertical, Plus, X, Link2, Link2Off } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 
@@ -19,6 +19,8 @@ interface ScaffoldingSidebarProps {
   onBulletsChange: (bullets: StoryBullet[]) => void
   activeBulletIndex?: number | null
   onBulletHover?: (index: number | null) => void
+  showTethers?: boolean
+  onToggleTethers?: () => void
 }
 
 const tagColors = [
@@ -138,6 +140,8 @@ export function ScaffoldingSidebar({
   onBulletsChange,
   activeBulletIndex,
   onBulletHover,
+  showTethers = true,
+  onToggleTethers,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -214,7 +218,7 @@ export function ScaffoldingSidebar({
           </AnimatePresence>
         </Reorder.Group>
 
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 space-y-2">
           <Button
             variant="ghost"
             size="sm"
@@ -224,6 +228,26 @@ export function ScaffoldingSidebar({
             <Plus className="size-3 mr-1.5" />
             Add Structural Step
           </Button>
+          {onToggleTethers && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleTethers}
+              className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground border border-border/40 hover:border-border/70 hover:bg-secondary/30 h-9 rounded-lg gap-1.5"
+            >
+              {showTethers ? (
+                <>
+                  <Link2Off className="size-3" />
+                  Hide connection lines
+                </>
+              ) : (
+                <>
+                  <Link2 className="size-3" />
+                  Show connection lines
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </ScrollArea>
     </motion.div>

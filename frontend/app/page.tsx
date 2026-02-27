@@ -20,6 +20,7 @@ import {
   generateHighlights,
   type ChangeHighlight,
 } from "@/lib/example-data"
+import { splitParagraphs } from "@/lib/utils"
 
 type AppPhase = "landing" | "triage" | "editor"
 
@@ -39,9 +40,7 @@ export default function WriterAIPage() {
   /* ── LANDING -> TRIAGE ── */
   const handleAnalyze = useCallback(() => {
     if (!chapterText.trim()) return
-    const paragraphs = chapterText
-      .split("\n\n")
-      .filter((p) => p.trim().length > 0)
+    const paragraphs = splitParagraphs(chapterText)
     const generatedBullets: StoryBullet[] = paragraphs
       .slice(0, 7)
       .map((para, i) => {

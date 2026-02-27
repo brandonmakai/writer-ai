@@ -1,11 +1,11 @@
 "use client"
 
 import { AnimatePresence } from "framer-motion"
-import { useWarpState } from "@/features/warp/hooks/use-warp-state"
-import { useRefactorSimulation } from "@/features/warp/hooks/use-refactor-simulation"
-import { LandingView } from "@/features/warp/components/landing-view"
-import { TriageView } from "@/features/warp/components/triage-view"
-import { EditorView } from "@/features/warp/components/editor-view"
+import { useWarpState } from "@/features/writing/hooks/use-warp-state"
+import { useRefactorSimulation } from "@/features/writing/hooks/use-refactor-simulation"
+import { LandingView } from "@/features/writing/components/landing-view"
+import { TriageView } from "@/features/writing/components/triage-view"
+import { EditorView } from "@/features/writing/components/editor-view"
 import { generateHighlights } from "@/lib/example-data"
 
 export default function WriterAIPage() {

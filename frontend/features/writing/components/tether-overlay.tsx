@@ -87,7 +87,7 @@ export function TetherOverlay({
   return (
     <svg
       ref={svgRef}
-      className="absolute inset-0 pointer-events-none z-10"
+      className="absolute inset-0 pointer-events-none z-0"
       width={dims.w}
       height={dims.h}
       style={{ overflow: "visible" }}

@@ -102,7 +102,7 @@ export function EditorView({
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="sticky bottom-0 flex items-center justify-center px-4 py-5"
+        className="sticky bottom-0 z-20 flex items-center justify-center px-4 py-5"
       >
         <div className="absolute inset-0 bg-linear-to-t from-background via-background/90 to-transparent pointer-events-none" />
 

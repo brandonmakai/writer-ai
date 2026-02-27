@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
-import type { StoryBullet } from "@/features/warp/types"
+import type { StoryBullet } from "@/features/writing/types"
 
 export interface UseBulletCrudOptions {
   bullets: StoryBullet[]

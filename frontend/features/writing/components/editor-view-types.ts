@@ -1,4 +1,4 @@
-import type { StoryBullet } from "@/features/warp/types"
+import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 
 /** Subset of warp state and handlers required by EditorView. */

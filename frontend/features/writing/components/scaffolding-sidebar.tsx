@@ -5,8 +5,8 @@ import { motion, AnimatePresence, Reorder } from "framer-motion"
 import { GripVertical, Plus, X, Link2, Link2Off } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import type { StoryBullet } from "@/features/warp/types"
-import { BEAT_TAG_COLORS } from "@/features/warp/types"
+import type { StoryBullet } from "@/features/writing/types"
+import { BEAT_TAG_COLORS } from "@/features/writing/types"
 
 export type { StoryBullet }
 

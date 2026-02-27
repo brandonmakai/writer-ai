@@ -4,8 +4,8 @@ import { useState, useCallback } from "react"
 import { motion, Reorder, AnimatePresence } from "framer-motion"
 import { GripHorizontal, X, Plus, Sparkles, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { StoryBullet } from "@/features/warp/types"
-import { BEAT_TAG_COLORS_TRIAGE } from "@/features/warp/types"
+import type { StoryBullet } from "@/features/writing/types"
+import { BEAT_TAG_COLORS_TRIAGE } from "@/features/writing/types"
 
 interface TriageViewProps {
   bullets: StoryBullet[]

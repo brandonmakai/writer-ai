@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { HighlightedText } from "./highlighted-text"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { getAnchorSegments } from "@/lib/anchor-segments"
-import type { StoryBullet } from "@/features/warp/types"
+import type { StoryBullet } from "@/features/writing/types"
 
 interface ChapterEditorProps {
   text: string

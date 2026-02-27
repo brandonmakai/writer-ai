@@ -27,7 +27,7 @@ export function EditorHeader({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-2 sm:gap-3 px-4 py-3 sm:px-5 border-b border-border/60 bg-card/40 backdrop-blur-xl min-w-0"
+      className="relative z-10 flex items-center gap-2 sm:gap-3 px-4 py-3 sm:px-5 border-b border-border/60 bg-card/40 backdrop-blur-xl min-w-0"
     >
       <Button
         variant="ghost"

@@ -13,6 +13,8 @@ uv run fastapi dev main.py
 
 API docs: http://127.0.0.1:8000/docs
 
+Optional `.env` in this directory: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`), `GEMINI_STRUCTURED_OUTPUT` (default `true`; set to `false` to disable responseSchema and debug 400s).
+
 ## Endpoints
 
 | Method | Path                          | Description                                                                 |

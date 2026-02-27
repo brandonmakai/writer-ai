@@ -1,5 +1,6 @@
 """Thin async client for the Gemini API"""
 
+import asyncio
 import json
 from enum import StrEnum, auto
 from typing import Any
@@ -7,11 +8,64 @@ from typing import Any
 import httpx
 
 from app.core.config import Settings
+from app.core.logging import get_logger
 from app.schemas.outline import OutlineRequest, OutlineResponse
 from app.schemas.rewrite import RewriteRequest, RewriteResponse
 
+logger = get_logger(__name__)
+
 GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta"
 TIMEOUT_SECONDS = 60.0
+# Retry 429 (rate limit) with exponential backoff
+MAX_RETRIES_429 = 3
+INITIAL_BACKOFF_SECONDS = 2.0
+
+
+async def _post_with_retry(
+    client: httpx.AsyncClient,
+    url: str,
+    headers: dict[str, str],
+    payload: dict[str, Any],
+    log_label: str,
+) -> httpx.Response:
+    """POST once or retry on 429 with exponential backoff."""
+    last_response: httpx.Response | None = None
+    backoff = INITIAL_BACKOFF_SECONDS
+    for attempt in range(MAX_RETRIES_429 + 1):
+        resp = await client.post(url, headers=headers, json=payload)
+        last_response = resp
+        if resp.status_code == 429:
+            # Log full response so we can see which limit is hit (RPM, RPD, etc.)
+            body_preview = resp.text if resp.text else "(empty)"
+            retry_after = resp.headers.get("Retry-After", "")
+            logger.warning(
+                "%s: 429 Too Many Requests — body=%s%s",
+                log_label,
+                body_preview[:1500],
+                (f" Retry-After={retry_after}") if retry_after else "",
+            )
+            if attempt < MAX_RETRIES_429:
+                logger.warning(
+                    "%s: retry %s/%s in %.1fs",
+                    log_label,
+                    attempt + 1,
+                    MAX_RETRIES_429,
+                    backoff,
+                )
+                await asyncio.sleep(backoff)
+            backoff *= 2
+            continue
+        break
+    if last_response and not last_response.is_success:
+        logger.error(
+            "%s non-OK: status=%s body=%s",
+            log_label,
+            last_response.status_code,
+            (last_response.text[:2000] if last_response.text else "(empty)"),
+        )
+    if last_response:
+        last_response.raise_for_status()
+    return last_response  # type: ignore[return-value]
 
 
 def _build_outline_prompt(request: OutlineRequest) -> str:
@@ -137,6 +191,8 @@ class GeminiClient:
         self._api_key = settings.gemini_api_key or ""
         self._model = settings.gemini_model
         self._base = GEMINI_BASE
+        self._structured_output = settings.gemini_structured_output
+        self._dev_log = settings.debug
 
     async def rewrite_chapter(self, request: RewriteRequest) -> RewriteResponse:
         """Call Gemini to refactor the chapter according to the bullets."""
@@ -147,27 +203,34 @@ class GeminiClient:
         url = f"{self._base}/models/{self._model}:generateContent"
 
         MAX_OUTPUT_TOKENS = 8192
+        generation_config: dict[str, Any] = {"maxOutputTokens": MAX_OUTPUT_TOKENS}
+        if self._structured_output:
+            generation_config["responseMimeType"] = "application/json"
+            generation_config["responseJsonSchema"] = RewriteResponse.model_json_schema()
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "responseMimeType": "application/json",
-                "responseSchema": RewriteResponse.model_json_schema(),
-                "maxOutputTokens": MAX_OUTPUT_TOKENS,
-            },
+            "generationConfig": generation_config,
         }
 
         async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-            resp = await client.post(
+            resp = await _post_with_retry(
+                client,
                 url,
                 headers={"x-goog-api-key": self._api_key},
-                json=payload,
+                payload=payload,
+                log_label="Gemini rewrite_chapter",
             )
-            resp.raise_for_status()
 
         body = resp.json()
         try:
             text = _extract_response_text(body)
-            return _parse_rewrite_response(text)
+            result = _parse_rewrite_response(text)
+            if self._dev_log:
+                logger.info(
+                    "rewrite_chapter response (dev): %s",
+                    json.dumps(result.model_dump(), indent=2),
+                )
+            return result
         except (KeyError, IndexError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse Gemini response: {e}") from e
 
@@ -179,24 +242,31 @@ class GeminiClient:
         url = f"{self._base}/models/{self._model}:generateContent"
 
         MAX_OUTPUT_TOKENS = 1024
+        generation_config: dict[str, Any] = {"maxOutputTokens": MAX_OUTPUT_TOKENS}
+        if self._structured_output:
+            generation_config["responseMimeType"] = "application/json"
+            generation_config["responseJsonSchema"] = OutlineResponse.model_json_schema()
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "responseMimeType": "application/json",
-                "responseSchema": OutlineResponse.model_json_schema(),
-                "maxOutputTokens": MAX_OUTPUT_TOKENS,
-            },
+            "generationConfig": generation_config,
         }
         async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-            resp = await client.post(
+            resp = await _post_with_retry(
+                client,
                 url,
                 headers={"x-goog-api-key": self._api_key},
-                json=payload,
+                payload=payload,
+                log_label="Gemini outline_chapter",
             )
-            resp.raise_for_status()
         body = resp.json()
         try:
             text = _extract_response_text(body)
-            return _parse_outline_response(text)
+            result = _parse_outline_response(text)
+            if self._dev_log:
+                logger.info(
+                    "outline_chapter response (dev): %s",
+                    json.dumps(result.model_dump(), indent=2),
+                )
+            return result
         except (KeyError, IndexError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse Gemini response: {e}") from e

@@ -21,8 +21,12 @@ class Settings(BaseSettings):
         description="API key for Gemini or compatible LLM provider.",
     )
     gemini_model: str = Field(
-        default="gemini-1.5-pro",
-        description="Default LLM model used for chapter rewrites.",
+        default="gemini-2.5-flash",
+        description="LLM model for rewrites (e.g. gemini-2.5-flash, gemini-1.5-pro).",
+    )
+    gemini_structured_output: bool = Field(
+        default=True,
+        description="Use responseMimeType/responseSchema for JSON; set False to debug 400s.",
     )
 
     cors_origins: list[str] = Field(

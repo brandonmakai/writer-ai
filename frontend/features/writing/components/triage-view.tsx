@@ -205,7 +205,7 @@ export function TriageView({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center pt-10 pb-4 px-4 flex-shrink-0"
+        className="text-center pt-10 pb-4 px-4 sm:px-6 flex-shrink-0"
       >
         <h2 className="text-xl font-semibold tracking-tight text-foreground text-balance">
           The Threads of Your Story
@@ -215,7 +215,7 @@ export function TriageView({
         </p>
       </motion.div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 flex flex-col items-center min-h-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 flex flex-col items-center min-h-0 w-full min-w-0">
         {suggestedBullet && (
           <>
             <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-3">
@@ -234,7 +234,7 @@ export function TriageView({
         )}
 
         {otherBullets.length > 0 && (
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-2xl min-w-0">
             <button
               type="button"
               onClick={() => setOtherBeatsExpanded((e) => !e)}
@@ -350,7 +350,7 @@ export function TriageView({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex flex-col items-center pb-8 pt-4 flex-shrink-0"
+        className="relative flex flex-col items-center pb-8 pt-4 px-4 sm:px-6 flex-shrink-0"
       >
         {hasEdited ? (
           <Button

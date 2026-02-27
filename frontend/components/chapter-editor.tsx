@@ -7,14 +7,17 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { HighlightedText } from "@/components/highlighted-text"
 import type { ChangeHighlight } from "@/lib/example-data"
+import { getAnchorSegments } from "@/lib/anchor-segments"
+import type { StoryBullet } from "@/components/scaffolding-sidebar"
 
 interface ChapterEditorProps {
   text: string
   onTextChange: (text: string) => void
   highlights: ChangeHighlight[]
   onClearHighlights: () => void
+  bullets: StoryBullet[]
   activeBulletIndex: number | null
-  onParagraphHover: (index: number | null) => void
+  onBulletHover: (index: number | null) => void
 }
 
 export function ChapterEditor({
@@ -22,8 +25,9 @@ export function ChapterEditor({
   onTextChange,
   highlights,
   onClearHighlights,
+  bullets,
   activeBulletIndex,
-  onParagraphHover,
+  onBulletHover,
 }: ChapterEditorProps) {
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -34,6 +38,12 @@ export function ChapterEditor({
     () => text.split("\n\n").filter((p) => p.trim().length > 0),
     [text]
   )
+
+  const anchorSegments = useMemo(
+    () => getAnchorSegments(text, bullets),
+    [text, bullets]
+  )
+  const useAnchorView = bullets.some((b) => b.anchor_text?.trim())
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(text)
@@ -137,40 +147,56 @@ export function ChapterEditor({
 
       <ScrollArea className="flex-1 min-h-0">
         {hasHighlights && !isEditing ? (
-          /* Highlighted review mode with tetherable paragraphs */
           <div className="p-6">
             <HighlightedText
               text={text}
               highlights={highlights}
+              bullets={bullets}
               activeBulletIndex={activeBulletIndex}
-              onParagraphHover={onParagraphHover}
+              onBulletHover={onBulletHover}
             />
           </div>
+        ) : useAnchorView && anchorSegments.length > 0 ? (
+          <div className="p-6">
+            <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-3 py-2 -mx-3 transition-all duration-300 whitespace-pre-wrap">
+              {anchorSegments.map((seg, i) =>
+                seg.type === "anchor" ? (
+                  <span
+                    key={`a-${seg.bulletIndex}-${i}`}
+                    data-anchor-for-bullet={seg.bulletIndex}
+                    onMouseEnter={() => onBulletHover(seg.bulletIndex)}
+                    onMouseLeave={() => onBulletHover(null)}
+                    className="rounded-sm transition-colors duration-200"
+                    style={{
+                      color:
+                        activeBulletIndex === seg.bulletIndex
+                          ? "oklch(0.95 0 0)"
+                          : "oklch(0.85 0 0 / 0.9)",
+                      boxShadow:
+                        activeBulletIndex === seg.bulletIndex
+                          ? "0 0 20px oklch(0.65 0.18 250 / 0.1), inset 0 0 0 1px oklch(0.65 0.18 250 / 0.15)"
+                          : "none",
+                      background:
+                        activeBulletIndex === seg.bulletIndex
+                          ? "oklch(0.65 0.18 250 / 0.04)"
+                          : "transparent",
+                    }}
+                  >
+                    {seg.text}
+                  </span>
+                ) : (
+                  <span key={`t-${i}`}>{seg.text}</span>
+                )
+              )}
+            </div>
+          </div>
         ) : (
-          /* Paragraph-based editing / reading view with data attributes for tethers */
           <div className="p-6">
             {paragraphs.length > 0 ? (
               paragraphs.map((para, i) => (
                 <p
                   key={i}
-                  data-paragraph-index={i}
-                  onMouseEnter={() => onParagraphHover(i)}
-                  onMouseLeave={() => onParagraphHover(null)}
-                  className="mb-6 font-serif text-[15px] leading-[1.9] cursor-text rounded-lg px-3 py-2 -mx-3 transition-all duration-300"
-                  style={{
-                    color:
-                      activeBulletIndex === i
-                        ? "oklch(0.95 0 0)"
-                        : "oklch(0.85 0 0 / 0.9)",
-                    boxShadow:
-                      activeBulletIndex === i
-                        ? "0 0 20px oklch(0.65 0.18 250 / 0.1), inset 0 0 0 1px oklch(0.65 0.18 250 / 0.15)"
-                        : "none",
-                    background:
-                      activeBulletIndex === i
-                        ? "oklch(0.65 0.18 250 / 0.04)"
-                        : "transparent",
-                  }}
+                  className="mb-6 font-serif text-[15px] leading-[1.9] cursor-text rounded-lg px-3 py-2 -mx-3"
                   contentEditable
                   suppressContentEditableWarning
                   onBlur={(e) => {

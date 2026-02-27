@@ -4,12 +4,14 @@ import { useMemo, useState, useRef, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import type { ChangeHighlight } from "@/lib/example-data"
+import { getAnchorSegments } from "@/lib/anchor-segments"
 
 interface HighlightedTextProps {
   text: string
   highlights: ChangeHighlight[]
+  bullets: { anchor_text?: string }[]
   activeBulletIndex?: number | null
-  onParagraphHover?: (index: number | null) => void
+  onBulletHover?: (index: number | null) => void
 }
 
 interface TextSegment {
@@ -17,19 +19,19 @@ interface TextSegment {
   highlight: ChangeHighlight | null
 }
 
-function buildSegments(
+/** Splits a text string by highlight.updated substrings; used for non-anchor segments. */
+function splitTextByHighlights(
   text: string,
   highlights: ChangeHighlight[]
 ): TextSegment[] {
   if (!highlights.length) return [{ text, highlight: null }]
-
-  const segments: TextSegment[] = []
 
   const sorted = [...highlights]
     .map((h) => ({ ...h, index: text.indexOf(h.updated) }))
     .filter((h) => h.index !== -1)
     .sort((a, b) => a.index - b.index)
 
+  const segments: TextSegment[] = []
   let cursor = 0
   for (const h of sorted) {
     const pos = text.indexOf(h.updated, cursor)
@@ -49,7 +51,7 @@ function buildSegments(
     segments.push({ text: text.slice(cursor), highlight: null })
   }
 
-  return segments
+  return segments.length > 0 ? segments : [{ text, highlight: null }]
 }
 
 function DiffPopup({
@@ -195,8 +197,9 @@ function HighlightedSpan({
 export function HighlightedText({
   text,
   highlights,
+  bullets,
   activeBulletIndex,
-  onParagraphHover,
+  onBulletHover,
 }: HighlightedTextProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeHighlight, setActiveHighlight] = useState<{
@@ -223,31 +226,10 @@ export function HighlightedText({
     }
   }, [])
 
-  const segments = useMemo(
-    () => buildSegments(text, highlights),
-    [text, highlights]
+  const anchorSegments = useMemo(
+    () => getAnchorSegments(text, bullets),
+    [text, bullets]
   )
-
-  const paragraphs = useMemo(() => {
-    const result: TextSegment[][] = [[]]
-    for (const segment of segments) {
-      const parts = segment.text.split(/\n\n/)
-      parts.forEach((part, i) => {
-        if (i > 0) {
-          result.push([])
-        }
-        if (part) {
-          result[result.length - 1].push({
-            text: part,
-            highlight: segment.highlight
-              ? { ...segment.highlight, updated: part }
-              : null,
-          })
-        }
-      })
-    }
-    return result.filter((p) => p.some((s) => s.text.trim()))
-  }, [segments])
 
   const handleHover = useCallback(
     (highlight: ChangeHighlight, rect: DOMRect) => {
@@ -263,44 +245,72 @@ export function HighlightedText({
     setActiveHighlight(null)
   }, [])
 
+  const highlightForText = useCallback(
+    (segmentText: string) =>
+      highlights.find((h) => h.updated === segmentText) ?? null,
+    [highlights]
+  )
+
   return (
     <div ref={containerRef} className="relative">
-      {paragraphs.map((para, pi) => (
-        <p
-          key={pi}
-          data-paragraph-index={pi}
-          onMouseEnter={() => onParagraphHover?.(pi)}
-          onMouseLeave={() => onParagraphHover?.(null)}
-          className="mb-6 font-serif text-[15px] leading-[1.9] rounded-lg px-3 py-2 -mx-3 transition-all duration-300"
-          style={{
-            color:
-              activeBulletIndex === pi
-                ? "oklch(0.95 0 0)"
-                : "oklch(0.85 0 0 / 0.9)",
-            boxShadow:
-              activeBulletIndex === pi
-                ? "0 0 20px oklch(0.65 0.18 250 / 0.1), inset 0 0 0 1px oklch(0.65 0.18 250 / 0.15)"
-                : "none",
-            background:
-              activeBulletIndex === pi
-                ? "oklch(0.65 0.18 250 / 0.04)"
-                : "transparent",
-          }}
-        >
-          {para.map((segment, si) =>
-            segment.highlight ? (
-              <HighlightedSpan
-                key={`${pi}-${si}`}
-                highlight={segment.highlight}
-                onHover={(rect) => handleHover(segment.highlight!, rect)}
-                onLeave={handleLeave}
-              />
-            ) : (
-              <span key={`${pi}-${si}`}>{segment.text}</span>
-            )
-          )}
-        </p>
-      ))}
+      <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-3 py-2 -mx-3 transition-all duration-300 whitespace-pre-wrap">
+        {anchorSegments.map((seg, i) =>
+          seg.type === "anchor" ? (
+            <span
+              key={`a-${seg.bulletIndex}-${i}`}
+              data-anchor-for-bullet={seg.bulletIndex}
+              onMouseEnter={() => onBulletHover?.(seg.bulletIndex)}
+              onMouseLeave={() => onBulletHover?.(null)}
+              className="rounded-sm transition-colors duration-200"
+              style={{
+                color:
+                  activeBulletIndex === seg.bulletIndex
+                    ? "oklch(0.95 0 0)"
+                    : "oklch(0.85 0 0 / 0.9)",
+                boxShadow:
+                  activeBulletIndex === seg.bulletIndex
+                    ? "0 0 20px oklch(0.65 0.18 250 / 0.1), inset 0 0 0 1px oklch(0.65 0.18 250 / 0.15)"
+                    : "none",
+                background:
+                  activeBulletIndex === seg.bulletIndex
+                    ? "oklch(0.65 0.18 250 / 0.04)"
+                    : "transparent",
+              }}
+            >
+              {(() => {
+                const h = highlightForText(seg.text)
+                return h ? (
+                  <HighlightedSpan
+                    highlight={h}
+                    onHover={(rect) => handleHover(h, rect)}
+                    onLeave={handleLeave}
+                  />
+                ) : (
+                  seg.text
+                )
+              })()}
+            </span>
+          ) : (
+            <span key={`t-${i}`}>
+              {(() => {
+                const parts = splitTextByHighlights(seg.text, highlights)
+                return parts.map((part, si) =>
+                  part.highlight ? (
+                    <HighlightedSpan
+                      key={`${i}-${si}`}
+                      highlight={part.highlight}
+                      onHover={(rect) => handleHover(part.highlight!, rect)}
+                      onLeave={handleLeave}
+                    />
+                  ) : (
+                    <span key={`${i}-${si}`}>{part.text}</span>
+                  )
+                )
+              })()}
+            </span>
+          )
+        )}
+      </div>
 
       <AnimatePresence>
         {activeHighlight && containerRect && (

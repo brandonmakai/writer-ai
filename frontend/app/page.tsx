@@ -218,8 +218,9 @@ export default function WriterAIPage() {
                   onTextChange={setChapterText}
                   highlights={highlights}
                   onClearHighlights={handleClearHighlights}
+                  bullets={bullets}
                   activeBulletIndex={hoveredIndex}
-                  onParagraphHover={setHoveredIndex}
+                  onBulletHover={setHoveredIndex}
                 />
               </motion.div>
 

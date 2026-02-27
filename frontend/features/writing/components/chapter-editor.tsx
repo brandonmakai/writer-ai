@@ -75,8 +75,8 @@ export function ChapterEditor({
       transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       className="flex flex-col h-full min-h-0"
     >
-      <div className="flex items-center justify-between px-6 py-3 border-b border-border/60">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6 border-b border-border/60 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="size-2 rounded-full bg-primary/60" />
           <h2 className="text-xs font-medium tracking-wide uppercase text-muted-foreground">
             Chapter
@@ -99,7 +99,7 @@ export function ChapterEditor({
             </motion.span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {hasHighlights && (
             <Button
               variant="ghost"
@@ -147,7 +147,7 @@ export function ChapterEditor({
 
       <ScrollArea className="flex-1 min-h-0">
         {hasHighlights && !isEditing ? (
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <HighlightedText
               text={text}
               highlights={highlights}
@@ -157,8 +157,8 @@ export function ChapterEditor({
             />
           </div>
         ) : useAnchorView && anchorSegments.length > 0 ? (
-          <div className="p-6">
-            <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-3 py-2 -mx-3 transition-all duration-300 whitespace-pre-wrap">
+          <div className="p-4 sm:p-6">
+            <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-4 py-2 sm:px-3 sm:-mx-3 transition-all duration-300 whitespace-pre-wrap">
               {anchorSegments.map((seg, i) =>
                 seg.type === "anchor" ? (
                   <span
@@ -191,12 +191,12 @@ export function ChapterEditor({
             </div>
           </div>
         ) : (
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {paragraphs.length > 0 ? (
               paragraphs.map((para, i) => (
                 <p
                   key={i}
-                  className="mb-6 font-serif text-[15px] leading-[1.9] cursor-text rounded-lg px-3 py-2 -mx-3"
+                  className="mb-6 font-serif text-[15px] leading-[1.9] cursor-text rounded-lg px-4 py-2 sm:px-3 sm:-mx-3"
                   contentEditable
                   suppressContentEditableWarning
                   onBlur={(e) => {

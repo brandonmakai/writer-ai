@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        files: ^backend/.*$
+      - id: ruff-format
+        files: ^backend/.*$
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: uv --project backend run mypy backend
+        language: system
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest
+        entry: uv --project backend run pytest backend
+        language: system
+        pass_filenames: false
+
+      - id: frontend-check
+        name: frontend-check
+        entry: bash -c "cd frontend && npm run lint && npm run type-check && npm run test"
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*$

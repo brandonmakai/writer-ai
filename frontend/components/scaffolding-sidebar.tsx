@@ -217,39 +217,39 @@ export function ScaffoldingSidebar({
             ))}
           </AnimatePresence>
         </Reorder.Group>
+      </ScrollArea>
 
-        <div className="px-3 pb-3 space-y-2">
+      <div className="flex-shrink-0 px-3 py-3 pt-0 space-y-2 border-t border-border/60">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={addBullet}
+          className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground border border-dashed border-border/40 hover:border-border/70 hover:bg-secondary/30 h-9 rounded-lg"
+        >
+          <Plus className="size-3 mr-1.5" />
+          Add Structural Step
+        </Button>
+        {onToggleTethers && (
           <Button
             variant="ghost"
             size="sm"
-            onClick={addBullet}
-            className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground border border-dashed border-border/40 hover:border-border/70 hover:bg-secondary/30 h-9 rounded-lg"
+            onClick={onToggleTethers}
+            className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground border border-border/40 hover:border-border/70 hover:bg-secondary/30 h-9 rounded-lg gap-1.5"
           >
-            <Plus className="size-3 mr-1.5" />
-            Add Structural Step
+            {showTethers ? (
+              <>
+                <Link2Off className="size-3" />
+                Hide connection lines
+              </>
+            ) : (
+              <>
+                <Link2 className="size-3" />
+                Show connection lines
+              </>
+            )}
           </Button>
-          {onToggleTethers && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleTethers}
-              className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground border border-border/40 hover:border-border/70 hover:bg-secondary/30 h-9 rounded-lg gap-1.5"
-            >
-              {showTethers ? (
-                <>
-                  <Link2Off className="size-3" />
-                  Hide connection lines
-                </>
-              ) : (
-                <>
-                  <Link2 className="size-3" />
-                  Show connection lines
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </ScrollArea>
+        )}
+      </div>
     </motion.div>
   )
 }

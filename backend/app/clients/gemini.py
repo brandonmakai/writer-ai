@@ -35,8 +35,10 @@ def _build_outline_prompt(request: OutlineRequest) -> str:
         parts.append(f"Language: {request.chapter.language.strip()}")
     parts.append("")
     parts.append(
-        'Return a JSON object with a single key "bullets": an array of 3–8 objects, '
-        'each with "content" (string) and "anchor_text" (string, verbatim from the chapter).'
+        'Return a JSON object with two keys: "bullets" (array of 3–8 objects, each with '
+        '"content" (string) and "anchor_text" (string, verbatim from the chapter)), and '
+        '"suggested_index" (integer, 0-based index into bullets of the one beat most impactful '
+        "to edit first, or the pivot beat)."
     )
     return "\n".join(parts)
 

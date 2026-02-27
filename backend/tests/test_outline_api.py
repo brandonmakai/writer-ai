@@ -16,7 +16,8 @@ class MockOutlineService:
                 BulletWithAnchor(content="First structural beat.", anchor_text="John met Maria."),
                 BulletWithAnchor(content="Second beat.", anchor_text="They argued."),
                 BulletWithAnchor(content="Third beat.", anchor_text="She left."),
-            ]
+            ],
+            suggested_index=1,
         )
 
 
@@ -43,3 +44,4 @@ def test_chapter_to_outline_returns_200_and_bullets() -> None:
         {"content": "Third beat.", "anchor_text": "She left."},
     ]
     assert len(data["bullets"]) == 3
+    assert data["suggested_index"] == 1

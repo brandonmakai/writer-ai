@@ -7,6 +7,7 @@ The outline model returns a JSON object with one key:
 - **bullets** — array of 3–8 objects, each with:
   - **content** (string): short summary of the beat or scene.
   - **anchor_text** (string): exact verbatim sentence from the input chapter that this bullet addresses (first occurrence or most significant sentence).
+- **suggested_index** (integer, 0-based): index into bullets of the one beat to highlight as the suggested edit in triage (most impactful to edit first, or pivot beat).
 
 ---
 

@@ -1,6 +1,6 @@
 """Schemas for the chapter-to-outline (bullets) API."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.schemas.common import STRUCTURAL_BULLETS_MAX, STRUCTURAL_BULLETS_MIN, ChapterBase
 
@@ -31,3 +31,15 @@ class OutlineResponse(BaseModel):
         max_length=STRUCTURAL_BULLETS_MAX,
         description="Structural bullet points, each with content and anchor_text from the chapter.",
     )
+    suggested_index: int = Field(
+        ...,
+        ge=0,
+        description="0-based index into bullets of the one beat to highlight as suggested edit in triage.",
+    )
+
+    @model_validator(mode="after")
+    def suggested_index_in_range(self) -> "OutlineResponse":
+        if self.suggested_index >= len(self.bullets):
+            msg = f"suggested_index must be < len(bullets) ({len(self.bullets)})"
+            raise ValueError(msg)
+        return self

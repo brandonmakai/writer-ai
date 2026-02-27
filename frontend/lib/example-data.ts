@@ -33,42 +33,56 @@ export interface ChangeHighlight {
       label: "Setting & Atmosphere",
       content:
         "Three days of rain; flooded garden; grey kitchen light. Establishes tone of decay and stagnation.",
+      anchor_text:
+        "The rain hadn't stopped for three days.",
     },
     {
       id: "2",
       label: "The Avoidance",
       content:
         "Margaret at the window, David pretending to read. Both characters delaying the inevitable conversation.",
+      anchor_text:
+        "He'd been sitting at the table since breakfast, pretending to read the paper but really just turning pages.",
     },
     {
       id: "3",
       label: "Inciting Dialogue",
       content:
         'David breaks the silence about the house. His flat, scripted delivery signals rehearsed dread.',
+      anchor_text:
+        '"We should talk about the house," he said, and the way he said it — flat, careful, like he was reading from a script — told her everything she needed to know about what was coming.',
     },
     {
       id: "4",
       label: "The Reveal",
       content:
         "Three months behind on mortgage. The bank has called repeatedly. Financial crisis made concrete.",
+      anchor_text:
+        '"We\'re behind, Maggie. Three months behind."',
     },
     {
       id: "5",
       label: "The Desperate Option",
       content:
         "Margaret suggests calling estranged brother Robert. Introduces family rift and pride vs. survival tension.",
+      anchor_text:
+        '"I could call Robert," she offered, hating the words even as she said them.',
     },
     {
       id: "6",
       label: "The Refusal",
       content:
         "David rejects Robert's help. Pride and old wounds clash with practical necessity.",
+      anchor_text:
+        '"I won\'t take his money. Not after what he said."',
     },
     {
       id: "7",
       label: "Fragile Resolution",
       content:
         "\"We'll figure it out\" — but the narrator undercuts the reassurance. Ends on uncertainty, not hope.",
+      anchor_text:
+        '"We\'ll figure it out," she said. "We always do."',
     },
   ]
   

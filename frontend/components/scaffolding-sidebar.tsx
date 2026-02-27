@@ -10,11 +10,15 @@ export interface StoryBullet {
   id: string
   label: string
   content: string
+  /** Verbatim sentence from the chapter this bullet addresses (for tether). */
+  anchor_text?: string
 }
 
 interface ScaffoldingSidebarProps {
   bullets: StoryBullet[]
   onBulletsChange: (bullets: StoryBullet[]) => void
+  activeBulletIndex?: number | null
+  onBulletHover?: (index: number | null) => void
 }
 
 const tagColors = [
@@ -30,11 +34,15 @@ function BulletCard({
   index,
   onUpdate,
   onDelete,
+  highlighted,
+  onBulletHover,
 }: {
   bullet: StoryBullet
   index: number
   onUpdate: (id: string, field: "label" | "content", value: string) => void
   onDelete: (id: string) => void
+  highlighted?: boolean
+  onBulletHover?: (index: number | null) => void
 }) {
   const [isFocused, setIsFocused] = useState(false)
   const color = tagColors[index % tagColors.length]
@@ -43,10 +51,21 @@ function BulletCard({
     <Reorder.Item
       value={bullet}
       id={bullet.id}
+      data-bullet-index={index}
+      onMouseEnter={() => onBulletHover?.(index)}
+      onMouseLeave={() => onBulletHover?.(null)}
       initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: highlighted ? 1.05 : 1,
+      }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.3, delay: index * 0.04 }}
+      transition={{
+        opacity: { duration: 0.3, delay: index * 0.04 },
+        y: { duration: 0.3, delay: index * 0.04 },
+        scale: { duration: 0.2, ease: "easeOut" },
+      }}
       whileDrag={{
         scale: 1.03,
         boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,140,255,0.2)",
@@ -117,6 +136,8 @@ function BulletCard({
 export function ScaffoldingSidebar({
   bullets,
   onBulletsChange,
+  activeBulletIndex,
+  onBulletHover,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -186,6 +207,8 @@ export function ScaffoldingSidebar({
                 index={index}
                 onUpdate={updateBullet}
                 onDelete={deleteBullet}
+                highlighted={activeBulletIndex === index}
+                onBulletHover={onBulletHover}
               />
             ))}
           </AnimatePresence>

@@ -28,7 +28,7 @@ export function EditorHeader({
         variant="ghost"
         size="sm"
         onClick={onBack}
-        className="text-muted-foreground hover:text-foreground h-8 px-2.5 gap-1.5"
+        className="text-muted-foreground hover:text-foreground min-h-11 h-11 px-2.5 gap-1.5 touch-manipulation"
         aria-label="Go back"
       >
         <ArrowLeft className="size-3.5" />

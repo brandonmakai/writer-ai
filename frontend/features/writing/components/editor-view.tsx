@@ -126,7 +126,7 @@ export function EditorView({
             size="lg"
             onClick={onRefactor}
             disabled={isRefactoring || warp.bullets.length === 0}
-            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250_/_0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250_/_0.4)] transition-all duration-300 rounded-xl h-12 gap-2.5 min-w-0"
+            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250_/_0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250_/_0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
           >
             {isRefactoring ? (
               <>

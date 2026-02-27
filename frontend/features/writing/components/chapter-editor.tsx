@@ -105,7 +105,7 @@ export function ChapterEditor({
               variant="ghost"
               size="sm"
               onClick={handleToggleEdit}
-              className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5"
+              className="min-h-11 h-11 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5 touch-manipulation"
             >
               {isEditing ? (
                 <>
@@ -124,7 +124,7 @@ export function ChapterEditor({
             variant="ghost"
             size="sm"
             onClick={handleCopy}
-            className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5"
+            className="min-h-11 h-11 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5 touch-manipulation"
           >
             {copied ? (
               <Check className="size-3 text-emerald-400" />
@@ -137,7 +137,7 @@ export function ChapterEditor({
             variant="ghost"
             size="sm"
             onClick={handleDownload}
-            className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5"
+            className="min-h-11 h-11 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5 touch-manipulation"
           >
             <Download className="size-3" />
             Download

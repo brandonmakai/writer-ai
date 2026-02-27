@@ -19,7 +19,6 @@ interface TextSegment {
   highlight: ChangeHighlight | null
 }
 
-/** Splits a text string by highlight.updated substrings; used for non-anchor segments. */
 function splitTextByHighlights(
   text: string,
   highlights: ChangeHighlight[]
@@ -65,7 +64,6 @@ function DiffPopup({
 }) {
   const top = anchorRect.bottom - containerRect.top + 8
   let left = anchorRect.left - containerRect.left + anchorRect.width / 2
-
   const popupWidth = 320
   const maxLeft = containerRect.width - popupWidth / 2 - 16
   const minLeft = popupWidth / 2 + 16
@@ -125,7 +123,7 @@ function DiffPopup({
         <div className="flex items-center gap-2 my-1.5">
           <div className="flex-1 h-px bg-border/40" />
           <ArrowRight
-            className="size-3 flex-shrink-0"
+            className="size-3 shrink-0"
             style={{ color: "oklch(0.78 0.14 75)" }}
           />
           <div className="flex-1 h-px bg-border/40" />
@@ -168,25 +166,9 @@ function HighlightedSpan({
       ref={ref}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onLeave}
-      className="relative cursor-help transition-colors duration-200"
+      className="relative cursor-help transition-colors duration-200 underline decoration-wavy underline-offset-4 decoration-[1.5px] hover:decoration-[oklch(0.78_0.14_75)] hover:bg-[oklch(0.78_0.14_75/0.08)] rounded-sm"
       style={{
-        textDecorationLine: "underline",
-        textDecorationStyle: "wavy",
-        textUnderlineOffset: "4px",
-        textDecorationThickness: "1.5px",
         textDecorationColor: "oklch(0.78 0.14 75 / 0.6)",
-        borderRadius: "2px",
-      }}
-      onMouseOver={(e) => {
-        ;(e.currentTarget as HTMLSpanElement).style.textDecorationColor =
-          "oklch(0.78 0.14 75 / 1)"
-        ;(e.currentTarget as HTMLSpanElement).style.backgroundColor =
-          "oklch(0.78 0.14 75 / 0.08)"
-      }}
-      onMouseOut={(e) => {
-        ;(e.currentTarget as HTMLSpanElement).style.textDecorationColor =
-          "oklch(0.78 0.14 75 / 0.6)"
-        ;(e.currentTarget as HTMLSpanElement).style.backgroundColor = "transparent"
       }}
     >
       {highlight.updated}

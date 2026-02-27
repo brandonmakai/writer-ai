@@ -16,7 +16,6 @@ interface TetherOverlayProps {
   bulletCount: number
   activeBulletIndex: number | null
   isRefactoring: boolean
-  /** When false, overlay is not rendered. */
   showTethers: boolean
 }
 
@@ -69,7 +68,6 @@ export function TetherOverlay({
       rafRef.current = requestAnimationFrame(tick)
     }
 
-    // Short delay for initial layout to settle
     const timer = setTimeout(() => {
       rafRef.current = requestAnimationFrame(tick)
     }, 300)
@@ -80,7 +78,6 @@ export function TetherOverlay({
     }
   }, [measure])
 
-  // Also remeasure when bullet count or active states change
   useEffect(() => {
     measure()
   }, [bulletCount, activeBulletIndex, measure])
@@ -96,7 +93,6 @@ export function TetherOverlay({
       style={{ overflow: "visible" }}
     >
       <defs>
-        {/* Base glow filter */}
         <filter id="tether-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
@@ -104,7 +100,6 @@ export function TetherOverlay({
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        {/* Active glow filter */}
         <filter id="tether-glow-active" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="6" result="blur" />
           <feMerge>
@@ -113,7 +108,6 @@ export function TetherOverlay({
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        {/* Refactor vibration filter */}
         <filter id="tether-vibrate" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge>
@@ -129,22 +123,17 @@ export function TetherOverlay({
         {lines.map((line) => {
           const isActive = activeBulletIndex === line.index
           const midX = (line.x1 + line.x2) / 2
-
-          // Cubic bezier control points for a smooth S-curve
           const cp1x = line.x1 + (midX - line.x1) * 0.7
           const cp1y = line.y1
           const cp2x = line.x2 - (line.x2 - midX) * 0.7
           const cp2y = line.y2
-
           const pathD = `M ${line.x1} ${line.y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${line.x2} ${line.y2}`
-
           const baseOpacity = isRefactoring ? 0.45 : isActive ? 0.65 : 0
           const strokeColor = isActive
             ? "oklch(0.75 0.14 250)"
             : isRefactoring
               ? "oklch(0.78 0.14 75)"
               : "oklch(0.65 0.14 250)"
-
           const filterUrl = isRefactoring
             ? "url(#tether-vibrate)"
             : isActive
@@ -189,14 +178,11 @@ export function TetherOverlay({
         })}
       </AnimatePresence>
 
-      {/* Small dots at connection points */}
       <AnimatePresence>
         {lines.map((line) => {
           const isActive = activeBulletIndex === line.index
-
           return (
             <g key={`dots-${line.index}`}>
-              {/* Left dot (anchor side) */}
               <motion.circle
                 cx={line.x1}
                 cy={line.y1}
@@ -223,7 +209,6 @@ export function TetherOverlay({
                     : { duration: 0.3, delay: line.index * 0.05 }
                 }
               />
-              {/* Right dot (bullet side) */}
               <motion.circle
                 cx={line.x2}
                 cy={line.y2}

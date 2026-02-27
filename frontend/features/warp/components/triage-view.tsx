@@ -4,15 +4,8 @@ import { useState, useCallback } from "react"
 import { motion, Reorder, AnimatePresence } from "framer-motion"
 import { GripHorizontal, X, Plus, Sparkles, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { StoryBullet } from "@/components/scaffolding-sidebar"
-
-const tagColors = [
-  { bg: "rgba(100,140,255,0.15)", text: "oklch(0.75 0.14 250)", border: "rgba(100,140,255,0.25)" },
-  { bg: "rgba(52,211,153,0.15)", text: "oklch(0.75 0.17 162)", border: "rgba(52,211,153,0.25)" },
-  { bg: "rgba(251,191,36,0.15)", text: "oklch(0.80 0.16 80)", border: "rgba(251,191,36,0.25)" },
-  { bg: "rgba(251,113,133,0.15)", text: "oklch(0.73 0.18 15)", border: "rgba(251,113,133,0.25)" },
-  { bg: "rgba(34,211,238,0.15)", text: "oklch(0.78 0.12 200)", border: "rgba(34,211,238,0.25)" },
-]
+import type { StoryBullet } from "@/features/warp/types"
+import { BEAT_TAG_COLORS_TRIAGE } from "@/features/warp/types"
 
 interface TriageViewProps {
   bullets: StoryBullet[]
@@ -21,6 +14,8 @@ interface TriageViewProps {
   suggestedBulletId: string | null
   onSuggestedChange?: (id: string) => void
 }
+
+const tagColors = BEAT_TAG_COLORS_TRIAGE
 
 function TriageCard({
   bullet,

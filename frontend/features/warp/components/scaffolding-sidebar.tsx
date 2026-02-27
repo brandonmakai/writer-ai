@@ -5,14 +5,10 @@ import { motion, AnimatePresence, Reorder } from "framer-motion"
 import { GripVertical, Plus, X, Link2, Link2Off } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import type { StoryBullet } from "@/features/warp/types"
+import { BEAT_TAG_COLORS } from "@/features/warp/types"
 
-export interface StoryBullet {
-  id: string
-  label: string
-  content: string
-  /** Verbatim sentence from the chapter this bullet addresses (for tether). */
-  anchor_text?: string
-}
+export type { StoryBullet }
 
 interface ScaffoldingSidebarProps {
   bullets: StoryBullet[]
@@ -22,14 +18,6 @@ interface ScaffoldingSidebarProps {
   showTethers?: boolean
   onToggleTethers?: () => void
 }
-
-const tagColors = [
-  { bg: "rgba(100,140,255,0.12)", text: "oklch(0.72 0.14 250)", border: "rgba(100,140,255,0.18)" },
-  { bg: "rgba(52,211,153,0.12)", text: "oklch(0.72 0.17 162)", border: "rgba(52,211,153,0.18)" },
-  { bg: "rgba(251,191,36,0.12)", text: "oklch(0.78 0.16 80)", border: "rgba(251,191,36,0.18)" },
-  { bg: "rgba(251,113,133,0.12)", text: "oklch(0.70 0.18 15)", border: "rgba(251,113,133,0.18)" },
-  { bg: "rgba(34,211,238,0.12)", text: "oklch(0.76 0.12 200)", border: "rgba(34,211,238,0.18)" },
-]
 
 function BulletCard({
   bullet,
@@ -47,7 +35,7 @@ function BulletCard({
   onBulletHover?: (index: number | null) => void
 }) {
   const [isFocused, setIsFocused] = useState(false)
-  const color = tagColors[index % tagColors.length]
+  const color = BEAT_TAG_COLORS[index % BEAT_TAG_COLORS.length]
 
   return (
     <Reorder.Item
@@ -85,7 +73,6 @@ function BulletCard({
       }}
     >
       <div className="flex items-start gap-2.5 p-3.5">
-        {/* Drag handle */}
         <div className="mt-1 cursor-grab active:cursor-grabbing text-muted-foreground/25 hover:text-muted-foreground/50 transition-colors touch-none">
           <GripVertical className="size-3.5" />
         </div>
@@ -122,7 +109,6 @@ function BulletCard({
           />
         </div>
 
-        {/* Delete button */}
         <button
           onClick={() => onDelete(bullet.id)}
           className="mt-0.5 size-6 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-foreground hover:bg-secondary/60 transition-all duration-200"
@@ -168,7 +154,6 @@ export function ScaffoldingSidebar({
         content: "",
       },
     ])
-    // Scroll to bottom after adding
     setTimeout(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
     }, 100)

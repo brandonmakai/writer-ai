@@ -5,10 +5,10 @@ import { motion } from "framer-motion"
 import { Copy, Download, Check, Pen, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { HighlightedText } from "@/components/highlighted-text"
+import { HighlightedText } from "./highlighted-text"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { getAnchorSegments } from "@/lib/anchor-segments"
-import type { StoryBullet } from "@/components/scaffolding-sidebar"
+import type { StoryBullet } from "@/features/warp/types"
 
 interface ChapterEditorProps {
   text: string

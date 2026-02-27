@@ -1,10 +1,10 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { EditorHeader } from "@/components/layout/editor-header"
 import { ChapterEditor } from "./chapter-editor"
 import { ScaffoldingSidebar } from "./scaffolding-sidebar"
@@ -25,9 +25,31 @@ export function EditorView({
   refactorProgress,
   onRefactor,
 }: EditorViewProps) {
+  const BEATS_TIP_SEEN_KEY = "writer-ai-beats-tip-seen"
   const workspaceRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
   const [bulletsDialogOpen, setBulletsDialogOpen] = useState(false)
+  const [highlightBeatsTrigger, setHighlightBeatsTrigger] = useState(false)
+
+  useEffect(() => {
+    if (isMobile && typeof sessionStorage !== "undefined" && !sessionStorage.getItem(BEATS_TIP_SEEN_KEY)) {
+      setHighlightBeatsTrigger(true)
+    }
+  }, [isMobile])
+
+  useEffect(() => {
+    if (!highlightBeatsTrigger) return
+    const t = setTimeout(() => setHighlightBeatsTrigger(false), 8000)
+    return () => clearTimeout(t)
+  }, [highlightBeatsTrigger])
+
+  const handleBulletsDialogOpenChange = (open: boolean) => {
+    setBulletsDialogOpen(open)
+    if (open) {
+      if (typeof sessionStorage !== "undefined") sessionStorage.setItem(BEATS_TIP_SEEN_KEY, "1")
+      setHighlightBeatsTrigger(false)
+    }
+  }
 
   return (
     <motion.div
@@ -43,6 +65,7 @@ export function EditorView({
         bulletCount={warp.bullets.length}
         highlightCount={warp.highlights.length}
         onOpenBullets={isMobile ? () => setBulletsDialogOpen(true) : undefined}
+        highlightBeatsTrigger={isMobile && highlightBeatsTrigger}
       />
 
       <div
@@ -100,11 +123,12 @@ export function EditorView({
       </div>
 
       {isMobile && (
-        <Dialog open={bulletsDialogOpen} onOpenChange={setBulletsDialogOpen}>
+        <Dialog open={bulletsDialogOpen} onOpenChange={handleBulletsDialogOpenChange}>
           <DialogContent
             className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-50 max-w-none w-full h-full translate-x-0 translate-y-0 rounded-none border-0 flex flex-col gap-0 p-0"
             showCloseButton={true}
           >
+            <DialogTitle className="sr-only">Structural beats</DialogTitle>
             <div className="flex-1 min-h-0 overflow-auto">
               <ScaffoldingSidebar
                 bullets={warp.bullets}

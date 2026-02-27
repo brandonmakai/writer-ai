@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { BookOpen, ArrowLeft, Sparkles, List } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 interface EditorHeaderProps {
@@ -10,6 +11,7 @@ interface EditorHeaderProps {
   bulletCount: number
   highlightCount: number
   onOpenBullets?: () => void
+  highlightBeatsTrigger?: boolean
 }
 
 export function EditorHeader({
@@ -18,6 +20,7 @@ export function EditorHeader({
   bulletCount,
   highlightCount,
   onOpenBullets,
+  highlightBeatsTrigger,
 }: EditorHeaderProps) {
   return (
     <motion.header
@@ -56,10 +59,14 @@ export function EditorHeader({
             variant="ghost"
             size="sm"
             onClick={onOpenBullets}
-            className="min-h-11 h-11 px-2.5 text-muted-foreground hover:text-foreground touch-manipulation"
+            className={cn(
+              "min-h-11 h-11 px-2.5 gap-1.5 text-muted-foreground hover:text-foreground touch-manipulation",
+              highlightBeatsTrigger && "ring-2 ring-primary/50 ring-offset-2 ring-offset-background animate-pulse"
+            )}
             aria-label="Open structural beats"
           >
             <List className="size-4" />
+            <span className="text-xs font-medium">Beats</span>
           </Button>
         )}
         <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50 shrink-0">

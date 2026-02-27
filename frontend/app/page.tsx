@@ -20,7 +20,7 @@ export default function WriterAIPage() {
     })
 
   return (
-    <main className="h-screen flex flex-col overflow-hidden bg-background">
+    <main className="h-screen flex flex-col overflow-hidden bg-background app-padding-x">
       <AnimatePresence mode="wait">
         {warp.phase === "landing" && (
           <LandingView

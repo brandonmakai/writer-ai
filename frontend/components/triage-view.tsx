@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion, Reorder, AnimatePresence } from "framer-motion"
 import { GripHorizontal, X, Plus, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { StoryBullet } from "@/components/plotflow/scaffolding-sidebar"
+import type { StoryBullet } from "@/components/scaffolding-sidebar"
 
 const tagColors = [
   { bg: "rgba(100,140,255,0.15)", text: "oklch(0.75 0.14 250)", border: "rgba(100,140,255,0.25)" },
@@ -18,6 +18,8 @@ interface TriageViewProps {
   bullets: StoryBullet[]
   onBulletsChange: (bullets: StoryBullet[]) => void
   onWeave: () => void
+  suggestedBulletId: string | null
+  onSuggestedChange?: (id: string) => void
 }
 
 function TriageCard({
@@ -120,6 +122,8 @@ export function TriageView({
   bullets,
   onBulletsChange,
   onWeave,
+  suggestedBulletId,
+  onSuggestedChange,
 }: TriageViewProps) {
   const updateBullet = (
     id: string,

@@ -33,6 +33,7 @@ export default function WriterAIPage() {
   const [preRefactorText, setPreRefactorText] = useState("")
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [showTethers, setShowTethers] = useState(true)
+  const [suggestedBulletId, setSuggestedBulletId] = useState<string | null>(null)
   const workspaceRef = useRef<HTMLDivElement>(null)
 
   /* ── LANDING -> TRIAGE ── */
@@ -58,6 +59,8 @@ export default function WriterAIPage() {
         }
       })
     setBullets(generatedBullets)
+    const mid = Math.floor(generatedBullets.length / 2)
+    setSuggestedBulletId(generatedBullets[mid]?.id ?? null)
     setHighlights([])
     setPhase("triage")
   }, [chapterText])
@@ -65,9 +68,23 @@ export default function WriterAIPage() {
   const handleTryExample = useCallback(() => {
     setChapterText(exampleChapter)
     setBullets(exampleBullets)
+    setSuggestedBulletId(exampleBullets[2]?.id ?? null)
     setHighlights([])
     setPhase("triage")
   }, [])
+
+  const handleBulletsChangeFromTriage = useCallback(
+    (newBullets: StoryBullet[]) => {
+      setBullets(newBullets)
+      if (
+        suggestedBulletId &&
+        !newBullets.some((b) => b.id === suggestedBulletId)
+      ) {
+        setSuggestedBulletId(newBullets[0]?.id ?? null)
+      }
+    },
+    [suggestedBulletId]
+  )
 
   /* ── TRIAGE -> EDITOR ── */
   const handleWeave = useCallback(() => {
@@ -77,6 +94,7 @@ export default function WriterAIPage() {
   const handleBackToLanding = useCallback(() => {
     setPhase("landing")
     setHighlights([])
+    setSuggestedBulletId(null)
   }, [])
 
   const handleBackToTriage = useCallback(() => {
@@ -176,8 +194,10 @@ export default function WriterAIPage() {
           <TriageView
             key="triage"
             bullets={bullets}
-            onBulletsChange={setBullets}
+            onBulletsChange={handleBulletsChangeFromTriage}
             onWeave={handleWeave}
+            suggestedBulletId={suggestedBulletId}
+            onSuggestedChange={setSuggestedBulletId}
           />
         )}
 

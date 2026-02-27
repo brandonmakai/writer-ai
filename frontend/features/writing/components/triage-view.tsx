@@ -194,7 +194,7 @@ export function TriageView({
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       transition={{ duration: 0.5 }}
     >
-      <div className="pointer-events-none fixed inset-0" aria-hidden="true">
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
         <div
           className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/3 w-[800px] h-[500px] rounded-full opacity-[0.03] blur-[120px]"
           style={{ background: "oklch(0.65 0.18 250)" }}
@@ -205,7 +205,7 @@ export function TriageView({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center pt-10 pb-4 px-4 sm:px-6 flex-shrink-0"
+        className="relative z-10 text-center pt-10 pb-4 px-4 sm:px-6 flex-shrink-0"
       >
         <h2 className="text-xl font-semibold tracking-tight text-foreground text-balance">
           The Threads of Your Story
@@ -215,7 +215,7 @@ export function TriageView({
         </p>
       </motion.div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 flex flex-col items-center min-h-0 w-full min-w-0">
+      <div className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 flex flex-col items-center min-h-0 w-full min-w-0">
         {suggestedBullet && (
           <>
             <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-3">
@@ -355,7 +355,7 @@ export function TriageView({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex flex-col items-center pb-8 pt-4 px-4 sm:px-6 flex-shrink-0"
+        className="relative z-10 flex flex-col items-center pb-8 pt-4 px-4 sm:px-6 flex-shrink-0"
       >
         {hasEdited ? (
           <Button

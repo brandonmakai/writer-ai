@@ -38,6 +38,21 @@
   --sidebar-border: oklch(0.22 0.01 270);
   --sidebar-ring: oklch(0.65 0.18 250);
   --glow: oklch(0.65 0.18 250);
+
+  /* Mobile-first responsive horizontal padding; safe-area for notched devices */
+  --app-px: 1rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --app-px: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --app-px: 1.5rem;
+  }
 }
 
 @theme inline {
@@ -90,6 +105,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* App horizontal padding: uses --app-px with safe-area insets for notched devices */
+.app-padding-x {
+  padding-left: max(var(--app-px), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--app-px), env(safe-area-inset-right, 0px));
 }
 
 /* Custom scrollbar styling */

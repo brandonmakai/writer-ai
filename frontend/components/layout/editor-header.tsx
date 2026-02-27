@@ -22,7 +22,7 @@ export function EditorHeader({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-3 px-5 py-3 border-b border-border/60 bg-card/40 backdrop-blur-xl"
+      className="flex items-center gap-2 sm:gap-3 px-4 py-3 sm:px-5 border-b border-border/60 bg-card/40 backdrop-blur-xl min-w-0"
     >
       <Button
         variant="ghost"
@@ -48,8 +48,8 @@ export function EditorHeader({
 
       <div className="flex-1" />
 
-      <div className="flex items-center gap-4">
-        <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0 shrink-0">
+        <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50 shrink-0">
           <span className="tabular-nums">{wordCount} words</span>
           <span className="text-border">|</span>
           <span className="tabular-nums">{bulletCount} beats</span>

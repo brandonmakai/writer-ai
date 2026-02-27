@@ -20,7 +20,9 @@ The rewrite model MUST return structured JSON in the following format.
 {
   "chapter_text": "string",
   "internal_structure": {
-    "bullets": ["string"],
+    "bullets": [
+      { "content": "string", "anchor_text": "string" }
+    ],
     "scene_summaries": [
       {
         "summary": "string",
@@ -43,6 +45,7 @@ The rewrite model MUST return structured JSON in the following format.
 
 - chapter_text → Final refactored chapter displayed to the user
 - internal_structure → Structural scaffolding for future iterations
+  - bullets → Array of objects with **content** (short summary of the beat) and **anchor_text** (exact verbatim sentence or phrase from the refactored chapter_text that this bullet addresses; used for UI tethers)
 - change_highlights → Mapping between original and updated sections
 
 ---

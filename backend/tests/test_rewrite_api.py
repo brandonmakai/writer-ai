@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.core.deps import get_rewrite_service
 from app.main import app
+from app.schemas.outline import BulletWithAnchor
 from app.schemas.rewrite import (
     ChangeHighlight,
     InternalStructure,
@@ -17,10 +18,14 @@ class MockRewriteService:
     """Returns a fixed response without calling Gemini."""
 
     async def rewrite(self, request: RewriteRequest) -> RewriteResponse:  # noqa: ARG002
+        bullets = [
+            BulletWithAnchor(content=b, anchor_text=f"Anchor for: {b[:20]}.")
+            for b in request.bullets
+        ]
         return RewriteResponse(
             chapter_text="Refactored chapter text.",
             internal_structure=InternalStructure(
-                bullets=request.bullets,
+                bullets=bullets,
                 scene_summaries=[
                     SceneSummary(
                         summary="Summary.",
@@ -60,11 +65,12 @@ def test_rewrite_from_outline_returns_200_and_structure() -> None:
     data = response.json()
     assert data["chapter_text"] == "Refactored chapter text."
     assert "internal_structure" in data
-    assert data["internal_structure"]["bullets"] == [
-        "John meets Maria.",
-        "Tension rises.",
-        "They argue.",
-    ]
+    bullets_data = data["internal_structure"]["bullets"]
+    assert len(bullets_data) == 3
+    assert bullets_data[0]["content"] == "John meets Maria."
+    assert "anchor_text" in bullets_data[0]
+    assert bullets_data[1]["content"] == "Tension rises."
+    assert bullets_data[2]["content"] == "They argue."
     assert len(data["change_highlights"]) == 1
     assert data["change_highlights"][0]["original"] == "Original."
     assert data["change_highlights"][0]["updated"] == "Updated."

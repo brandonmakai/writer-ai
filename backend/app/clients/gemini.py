@@ -125,8 +125,10 @@ def _build_rewrite_prompt(request: RewriteRequest) -> str:
         parts.append(f"Target language: {request.chapter.language.strip()}")
     parts.append("")
     parts.append(
-        "Return a JSON object with keys: chapter_text, internal_structure "
-        "(bullets, scene_summaries), change_highlights."
+        "Return a JSON object with keys: chapter_text, internal_structure, change_highlights. "
+        "internal_structure must have bullets (array of objects with content and anchor_text) "
+        "and scene_summaries. For each bullet, anchor_text must be one exact verbatim sentence "
+        "or phrase from your refactored chapter_text that the bullet addresses (for UI tethers)."
     )
     return "\n".join(parts)
 

@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 
 from app.schemas.common import STRUCTURAL_BULLETS_MIN, ChapterBase
+from app.schemas.outline import BulletWithAnchor
 
 
 class RewriteRequest(BaseModel):
@@ -23,7 +24,12 @@ class SceneSummary(BaseModel):
 
 
 class InternalStructure(BaseModel):
-    bullets: list[str]
+    """Structural scaffolding for refactored chapter; bullets include anchor text for tethers."""
+
+    bullets: list[BulletWithAnchor] = Field(
+        ...,
+        description="Bullets with content and anchor_text verbatim from refactored chapter_text.",
+    )
     scene_summaries: list[SceneSummary]
 
 

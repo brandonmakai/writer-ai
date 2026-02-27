@@ -10,6 +10,7 @@ import { ChapterEditor } from "./chapter-editor"
 import { ScaffoldingSidebar } from "./scaffolding-sidebar"
 import { TetherOverlay } from "./tether-overlay"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 import type { WarpState } from "./editor-view-types"
 
 export interface EditorViewProps {
@@ -86,15 +87,39 @@ export function EditorView({
             ease: [0.22, 1, 0.36, 1],
           }}
         >
-          <ChapterEditor
-            text={warp.chapterText}
-            onTextChange={warp.setChapterText}
-            highlights={warp.highlights}
-            onClearHighlights={warp.handleClearHighlights}
-            bullets={warp.bullets}
-            activeBulletIndex={warp.hoveredIndex}
-            onBulletHover={warp.setHoveredIndex}
-          />
+          {isRefactoring ? (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="shrink-0 h-[53px] border-b border-border/60" />
+              <div className="flex-1 min-h-0 overflow-auto">
+                <div className="p-4 sm:p-6 space-y-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-4 rounded bg-muted/60 animate-pulse",
+                        i === 1 && "w-full",
+                        i === 2 && "w-11/12",
+                        i === 3 && "w-full",
+                        i === 4 && "w-4/5",
+                        i === 5 && "w-full",
+                        i === 6 && "w-3/4"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <ChapterEditor
+              text={warp.chapterText}
+              onTextChange={warp.setChapterText}
+              highlights={warp.highlights}
+              onClearHighlights={warp.handleClearHighlights}
+              bullets={warp.bullets}
+              activeBulletIndex={warp.hoveredIndex}
+              onBulletHover={warp.setHoveredIndex}
+            />
+          )}
         </motion.div>
 
         <motion.div

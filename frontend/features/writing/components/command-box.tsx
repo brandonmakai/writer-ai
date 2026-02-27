@@ -10,6 +10,8 @@ interface CommandBoxProps {
   onAnalyze: () => void
   onTryExample: () => void
   isUnfolded: boolean
+  isAnalyzing?: boolean
+  analyzeError?: string | null
 }
 
 export function CommandBox({
@@ -17,6 +19,8 @@ export function CommandBox({
   onTextChange,
   onAnalyze,
   onTryExample,
+  isAnalyzing = false,
+  analyzeError = null,
 }: CommandBoxProps) {
   return (
     <motion.div
@@ -86,25 +90,32 @@ export function CommandBox({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.35 }}
-        className="flex items-center justify-center gap-3 mt-5"
+        className="flex flex-col items-center gap-3 mt-5"
       >
-        <Button
-          variant="ghost"
-          size="default"
-          onClick={onTryExample}
-          className="text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-sm gap-1.5"
-        >
-          <Sparkles className="size-3.5" />
-          Try an Example
-        </Button>
-        <Button
-          onClick={onAnalyze}
-          disabled={!text.trim()}
-          size="default"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed text-sm px-6 shadow-[0_0_24px_oklch(0.65_0.18_250_/_0.2)] hover:shadow-[0_0_32px_oklch(0.65_0.18_250_/_0.35)] transition-all duration-300"
-        >
-          Analyze Structure
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="ghost"
+            size="default"
+            onClick={onTryExample}
+            className="text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-sm gap-1.5"
+          >
+            <Sparkles className="size-3.5" />
+            Try an Example
+          </Button>
+          <Button
+            onClick={onAnalyze}
+            disabled={!text.trim() || isAnalyzing}
+            size="default"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed text-sm px-6 shadow-[0_0_24px_oklch(0.65_0.18_250_/_0.2)] hover:shadow-[0_0_32px_oklch(0.65_0.18_250_/_0.35)] transition-all duration-300"
+          >
+            {isAnalyzing ? "Analyzing…" : "Analyze Structure"}
+          </Button>
+        </div>
+        {analyzeError && (
+          <p role="alert" className="text-center text-sm text-destructive">
+            {analyzeError}
+          </p>
+        )}
       </motion.div>
     </motion.div>
   )

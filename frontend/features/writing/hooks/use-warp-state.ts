@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
-import { splitParagraphs } from "@/lib/utils"
+import { fetchOutline } from "@/lib/api"
 import { exampleChapter, exampleBullets } from "@/lib/example-data"
 
 export type WarpPhase = "landing" | "triage" | "editor"
@@ -16,34 +16,38 @@ export function useWarpState() {
   const [suggestedBulletId, setSuggestedBulletId] = useState<string | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [showTethers, setShowTethers] = useState(true)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
 
-  const handleAnalyze = useCallback(() => {
+  const handleAnalyze = useCallback(async () => {
     if (!chapterText.trim()) return
-    const paragraphs = splitParagraphs(chapterText)
-    const generatedBullets: StoryBullet[] = paragraphs
-      .slice(0, 7)
-      .map((para, i) => {
-        const trimmed = para.trim()
-        const firstSentenceMatch = trimmed.match(/^[^.!?]*[.!?]/)
-        const anchor_text = firstSentenceMatch
-          ? firstSentenceMatch[0].trim()
-          : trimmed
-        return {
-          id: crypto.randomUUID(),
-          label: `Beat ${i + 1}`,
-          content:
-            trimmed.slice(0, 120) + (trimmed.length > 120 ? "..." : ""),
-          anchor_text,
-        }
+    setIsAnalyzing(true)
+    setAnalyzeError(null)
+    try {
+      const res = await fetchOutline({
+        chapter: { text: chapterText.trim() },
       })
-    setBullets(generatedBullets)
-    const mid = Math.floor(generatedBullets.length / 2)
-    setSuggestedBulletId(generatedBullets[mid]?.id ?? null)
-    setHighlights([])
-    setPhase("triage")
+      const mapped: StoryBullet[] = res.bullets.map((b, i) => ({
+        id: crypto.randomUUID(),
+        label: `Beat ${i + 1}`,
+        content: b.content,
+        anchor_text: b.anchor_text,
+      }))
+      setBullets(mapped)
+      const suggested = mapped[res.suggested_index]
+      setSuggestedBulletId(suggested?.id ?? mapped[0]?.id ?? null)
+      setHighlights([])
+      setPhase("triage")
+    } catch (err) {
+      console.error("Outline API error:", err)
+      setAnalyzeError("Analysis failed. Please try again.")
+    } finally {
+      setIsAnalyzing(false)
+    }
   }, [chapterText])
 
   const handleTryExample = useCallback(() => {
+    setAnalyzeError(null)
     setChapterText(exampleChapter)
     setBullets(exampleBullets)
     setSuggestedBulletId(exampleBullets[2]?.id ?? null)
@@ -100,6 +104,8 @@ export function useWarpState() {
     setHoveredIndex,
     showTethers,
     setShowTethers,
+    isAnalyzing,
+    analyzeError,
     handleAnalyze,
     handleTryExample,
     handleBulletsChangeFromTriage,

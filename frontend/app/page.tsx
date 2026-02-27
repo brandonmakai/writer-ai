@@ -28,6 +28,8 @@ export default function WriterAIPage() {
             onTextChange={warp.setChapterText}
             onAnalyze={warp.handleAnalyze}
             onTryExample={warp.handleTryExample}
+            isAnalyzing={warp.isAnalyzing}
+            analyzeError={warp.analyzeError}
           />
         )}
         {warp.phase === "triage" && (

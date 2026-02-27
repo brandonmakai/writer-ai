@@ -8,6 +8,8 @@ interface LandingViewProps {
   onTextChange: (text: string) => void
   onAnalyze: () => void
   onTryExample: () => void
+  isAnalyzing?: boolean
+  analyzeError?: string | null
 }
 
 export function LandingView({
@@ -15,6 +17,8 @@ export function LandingView({
   onTextChange,
   onAnalyze,
   onTryExample,
+  isAnalyzing = false,
+  analyzeError = null,
 }: LandingViewProps) {
   return (
     <motion.div
@@ -39,6 +43,8 @@ export function LandingView({
         onAnalyze={onAnalyze}
         onTryExample={onTryExample}
         isUnfolded={false}
+        isAnalyzing={isAnalyzing}
+        analyzeError={analyzeError}
       />
 
       <motion.p

@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { BookOpen, ArrowLeft, Sparkles } from "lucide-react"
+import { BookOpen, ArrowLeft, Sparkles, List } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface EditorHeaderProps {
@@ -9,6 +9,7 @@ interface EditorHeaderProps {
   wordCount: number
   bulletCount: number
   highlightCount: number
+  onOpenBullets?: () => void
 }
 
 export function EditorHeader({
@@ -16,6 +17,7 @@ export function EditorHeader({
   wordCount,
   bulletCount,
   highlightCount,
+  onOpenBullets,
 }: EditorHeaderProps) {
   return (
     <motion.header
@@ -49,6 +51,17 @@ export function EditorHeader({
       <div className="flex-1" />
 
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 shrink-0">
+        {onOpenBullets && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onOpenBullets}
+            className="min-h-11 h-11 px-2.5 text-muted-foreground hover:text-foreground touch-manipulation"
+            aria-label="Open structural beats"
+          >
+            <List className="size-4" />
+          </Button>
+        )}
         <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50 shrink-0">
           <span className="tabular-nums">{wordCount} words</span>
           <span className="text-border">|</span>

@@ -1,13 +1,15 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { EditorHeader } from "@/components/layout/editor-header"
 import { ChapterEditor } from "./chapter-editor"
 import { ScaffoldingSidebar } from "./scaffolding-sidebar"
 import { TetherOverlay } from "./tether-overlay"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { WarpState } from "./editor-view-types"
 
 export interface EditorViewProps {
@@ -24,6 +26,8 @@ export function EditorView({
   onRefactor,
 }: EditorViewProps) {
   const workspaceRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
+  const [bulletsDialogOpen, setBulletsDialogOpen] = useState(false)
 
   return (
     <motion.div
@@ -38,6 +42,7 @@ export function EditorView({
         wordCount={warp.wordCount}
         bulletCount={warp.bullets.length}
         highlightCount={warp.highlights.length}
+        onOpenBullets={isMobile ? () => setBulletsDialogOpen(true) : undefined}
       />
 
       <div
@@ -93,6 +98,26 @@ export function EditorView({
           showTethers={warp.showTethers}
         />
       </div>
+
+      {isMobile && (
+        <Dialog open={bulletsDialogOpen} onOpenChange={setBulletsDialogOpen}>
+          <DialogContent
+            className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-50 max-w-none w-full h-full translate-x-0 translate-y-0 rounded-none border-0 flex flex-col gap-0 p-0"
+            showCloseButton={true}
+          >
+            <div className="flex-1 min-h-0 overflow-auto">
+              <ScaffoldingSidebar
+                bullets={warp.bullets}
+                onBulletsChange={warp.setBullets}
+                activeBulletIndex={warp.hoveredIndex}
+                onBulletHover={warp.setHoveredIndex}
+                showTethers={warp.showTethers}
+                onToggleTethers={() => warp.setShowTethers((v) => !v)}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}

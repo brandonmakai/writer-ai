@@ -1,9 +1,17 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchRewrite } from "@/lib/api"
+
+const REFACTOR_STEP_LABELS = [
+  "Analyzing structure…",
+  "Refactoring scenes…",
+  "Applying your edits…",
+  "Finalizing…",
+] as const
+const REFACTOR_STEP_INTERVAL_MS = 2500
 
 export interface UseRefactorOptions {
   bullets: StoryBullet[]
@@ -20,12 +28,26 @@ export function useRefactor({
 }: UseRefactorOptions) {
   const [isRefactoring, setIsRefactoring] = useState(false)
   const [refactorProgress, setRefactorProgress] = useState(0)
+  const [refactorStepIndex, setRefactorStepIndex] = useState(0)
   const [refactorError, setRefactorError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isRefactoring) return
+    const id = setInterval(() => {
+      setRefactorStepIndex((i) => (i + 1) % REFACTOR_STEP_LABELS.length)
+    }, REFACTOR_STEP_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [isRefactoring])
+
+  const refactorStepLabel = isRefactoring
+    ? REFACTOR_STEP_LABELS[refactorStepIndex]
+    : ""
 
   const handleRefactor = useCallback(async () => {
     if (isRefactoring || bullets.length === 0) return
     setIsRefactoring(true)
     setRefactorProgress(0)
+    setRefactorStepIndex(0)
     setRefactorError(null)
     try {
       const res = await fetchRewrite({
@@ -46,5 +68,11 @@ export function useRefactor({
     }
   }, [isRefactoring, bullets, chapterText, setChapterText, setHighlights])
 
-  return { isRefactoring, refactorProgress, handleRefactor, refactorError }
+  return {
+    isRefactoring,
+    refactorProgress,
+    refactorStepLabel,
+    handleRefactor,
+    refactorError,
+  }
 }

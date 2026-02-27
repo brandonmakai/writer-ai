@@ -16,6 +16,7 @@ export interface EditorViewProps {
   warp: WarpState
   isRefactoring: boolean
   refactorProgress: number
+  refactorStepLabel?: string
   onRefactor: () => void
   refactorError?: string | null
 }
@@ -24,6 +25,7 @@ export function EditorView({
   warp,
   isRefactoring,
   refactorProgress,
+  refactorStepLabel = "",
   onRefactor,
   refactorError = null,
 }: EditorViewProps) {
@@ -34,9 +36,9 @@ export function EditorView({
   const [highlightBeatsTrigger, setHighlightBeatsTrigger] = useState(false)
 
   useEffect(() => {
-    if (isMobile && typeof sessionStorage !== "undefined" && !sessionStorage.getItem(BEATS_TIP_SEEN_KEY)) {
-      setHighlightBeatsTrigger(true)
-    }
+    if (!isMobile || typeof sessionStorage === "undefined" || sessionStorage.getItem(BEATS_TIP_SEEN_KEY)) return
+    const id = setTimeout(() => setHighlightBeatsTrigger(true), 0)
+    return () => clearTimeout(id)
   }, [isMobile])
 
   useEffect(() => {
@@ -182,15 +184,7 @@ export function EditorView({
             {isRefactoring ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                <span>
-                  {"Weaving" +
-                    ".".repeat(
-                      Math.floor((refactorProgress / 100) * 3) + 1
-                    )}
-                </span>
-                <span className="text-primary-foreground/60 text-xs ml-1 tabular-nums">
-                  {refactorProgress}%
-                </span>
+                <span>{refactorStepLabel || "Weaving…"}</span>
               </>
             ) : (
               <>

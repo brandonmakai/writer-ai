@@ -9,13 +9,18 @@ import { EditorView } from "@/features/writing/components/editor-view"
 
 export default function WriterAIPage() {
   const warp = useWarpState()
-  const { isRefactoring, refactorProgress, handleRefactor, refactorError } =
-    useRefactor({
-      bullets: warp.bullets,
-      chapterText: warp.chapterText,
-      setChapterText: warp.setChapterText,
-      setHighlights: warp.setHighlights,
-    })
+  const {
+    isRefactoring,
+    refactorProgress,
+    refactorStepLabel,
+    handleRefactor,
+    refactorError,
+  } = useRefactor({
+    bullets: warp.bullets,
+    chapterText: warp.chapterText,
+    setChapterText: warp.setChapterText,
+    setHighlights: warp.setHighlights,
+  })
 
   return (
     <main className="h-screen flex flex-col overflow-hidden bg-background app-padding-x">
@@ -45,6 +50,7 @@ export default function WriterAIPage() {
             warp={warp}
             isRefactoring={isRefactoring}
             refactorProgress={refactorProgress}
+            refactorStepLabel={refactorStepLabel}
             onRefactor={handleRefactor}
             refactorError={refactorError}
           />

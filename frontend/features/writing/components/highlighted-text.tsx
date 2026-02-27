@@ -88,7 +88,7 @@ function DiffPopup({
         />
       </div>
       <div
-        className="rounded-xl border shadow-2xl backdrop-blur-xl px-4 py-3.5 w-[320px]"
+        className="rounded-xl border shadow-2xl backdrop-blur-xl px-4 py-3.5 w-full max-w-[min(320px,calc(100vw-2rem))]"
         style={{
           background:
             "linear-gradient(135deg, oklch(0.16 0.01 270 / 0.97), oklch(0.13 0.008 270 / 0.97))",
@@ -235,7 +235,7 @@ export function HighlightedText({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-3 py-2 -mx-3 transition-all duration-300 whitespace-pre-wrap">
+      <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-4 py-2 sm:px-3 sm:-mx-3 transition-all duration-300 whitespace-pre-wrap">
         {anchorSegments.map((seg, i) =>
           seg.type === "anchor" ? (
             <span

@@ -19,7 +19,7 @@ export function LandingView({
   return (
     <motion.div
       key="landing"
-      className="flex-1 flex flex-col items-center justify-center px-4"
+      className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 w-full min-w-0"
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >

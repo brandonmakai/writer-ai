@@ -21,7 +21,7 @@ export function CommandBox({
   return (
     <motion.div
       layout
-      className="w-full max-w-2xl"
+      className="w-full max-w-2xl min-w-0"
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       {/* Branding */}

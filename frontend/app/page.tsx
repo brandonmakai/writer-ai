@@ -2,21 +2,19 @@
 
 import { AnimatePresence } from "framer-motion"
 import { useWarpState } from "@/features/writing/hooks/use-warp-state"
-import { useRefactorSimulation } from "@/features/writing/hooks/use-refactor-simulation"
+import { useRefactor } from "@/features/writing/hooks/use-refactor"
 import { LandingView } from "@/features/writing/components/landing-view"
 import { TriageView } from "@/features/writing/components/triage-view"
 import { EditorView } from "@/features/writing/components/editor-view"
-import { generateHighlights } from "@/lib/example-data"
 
 export default function WriterAIPage() {
   const warp = useWarpState()
-  const { isRefactoring, refactorProgress, handleRefactor } =
-    useRefactorSimulation({
+  const { isRefactoring, refactorProgress, handleRefactor, refactorError } =
+    useRefactor({
       bullets: warp.bullets,
       chapterText: warp.chapterText,
       setChapterText: warp.setChapterText,
       setHighlights: warp.setHighlights,
-      generateHighlights,
     })
 
   return (
@@ -48,6 +46,7 @@ export default function WriterAIPage() {
             isRefactoring={isRefactoring}
             refactorProgress={refactorProgress}
             onRefactor={handleRefactor}
+            refactorError={refactorError}
           />
         )}
       </AnimatePresence>

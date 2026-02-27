@@ -17,6 +17,7 @@ export interface EditorViewProps {
   isRefactoring: boolean
   refactorProgress: number
   onRefactor: () => void
+  refactorError?: string | null
 }
 
 export function EditorView({
@@ -24,6 +25,7 @@ export function EditorView({
   isRefactoring,
   refactorProgress,
   onRefactor,
+  refactorError = null,
 }: EditorViewProps) {
   const BEATS_TIP_SEEN_KEY = "writer-ai-beats-tip-seen"
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -197,6 +199,11 @@ export function EditorView({
               </>
             )}
           </Button>
+          {refactorError && (
+            <p role="alert" className="mt-3 text-center text-sm text-destructive">
+              {refactorError}
+            </p>
+          )}
         </div>
       </motion.div>
     </motion.div>

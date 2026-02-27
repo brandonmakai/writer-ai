@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Writer AI Frontend
+
+Next.js 15+ (App Router), React 19, Tailwind v4. See [docs/ENGINEERING_GUIDELINES.md](../docs/ENGINEERING_GUIDELINES.md) for commit rules, frontend best practices, and quality gates.
 
 ## Getting Started
 
-First, run the development server:
+From this directory:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|--------|-------------|
+| `npm run dev` | Start dev server with hot reload |
+| `npm run build` | Production build |
+| `npm run start` | Run production server |
+| `npm run lint` | ESLint (run before committing) |
+| `npm run type-check` | TypeScript check (`tsc --noEmit`) |
+| `npm run test` | Unit tests (Vitest) |
+| `npm run smoke-test` | E2E smoke test (Playwright) |
 
-## Learn More
+## Styles
 
-To learn more about Next.js, take a look at the following resources:
+- **Tailwind v4** via PostCSS. Use utility classes and design tokens (e.g. `text-foreground`, `bg-background`, `border-border`).
+- Use the `cn()` helper from `@/lib/utils` for conditional or merged class names.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tests
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Unit**: Vitest + React Testing Library in `frontend/`. Tests live next to code (e.g. `lib/utils.test.ts`). Run: `npm run test`.
+- **E2E / smoke**: Playwright specs in `frontend/e2e/`. Run: `npm run smoke-test` (starts dev server if needed).
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Before committing, run `npm run lint && npm run type-check && npm run test`. Pre-commit runs these when `frontend/` files change. **Commit after making changes** so work is saved and hooks can run.

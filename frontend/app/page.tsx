@@ -247,7 +247,6 @@ export default function WriterAIPage() {
                 containerRef={workspaceRef}
                 bulletCount={bullets.length}
                 activeBulletIndex={hoveredIndex}
-                activeParagraphIndex={hoveredIndex}
                 isRefactoring={isRefactoring}
               />
             </div>

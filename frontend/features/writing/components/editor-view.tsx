@@ -91,18 +91,18 @@ export function EditorView({
             <div className="flex flex-col h-full min-h-0">
               <div className="shrink-0 h-[53px] border-b border-border/60" />
               <div className="flex-1 min-h-0 overflow-auto">
-                <div className="p-4 sm:p-6 space-y-3">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div className="p-4 sm:p-6 space-y-3 min-h-full">
+                  {Array.from({ length: 22 }, (_, i) => (
                     <div
                       key={i}
                       className={cn(
-                        "h-4 rounded bg-muted/60 animate-pulse",
-                        i === 1 && "w-full",
-                        i === 2 && "w-11/12",
-                        i === 3 && "w-full",
-                        i === 4 && "w-4/5",
-                        i === 5 && "w-full",
-                        i === 6 && "w-3/4"
+                        "h-4 rounded bg-muted/80 animate-[pulse_1.25s_ease-in-out_infinite]",
+                        i % 6 === 0 && "w-full",
+                        i % 6 === 1 && "w-11/12",
+                        i % 6 === 2 && "w-full",
+                        i % 6 === 3 && "w-4/5",
+                        i % 6 === 4 && "w-full",
+                        i % 6 === 5 && "w-3/4"
                       )}
                     />
                   ))}

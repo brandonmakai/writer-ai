@@ -42,7 +42,7 @@ export function EditorView({
 
       <div
         ref={workspaceRef}
-        className="flex-1 flex min-h-0 relative"
+        className="flex-1 flex min-h-0 w-full relative"
       >
         <motion.div
           className="flex-7 min-w-0 flex flex-col min-h-0"
@@ -102,11 +102,11 @@ export function EditorView({
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="sticky bottom-0 z-20 flex items-center justify-center px-4 py-5"
+        className="sticky bottom-0 z-20 flex items-center justify-center px-4 py-5 sm:px-6"
       >
         <div className="absolute inset-0 bg-linear-to-t from-background via-background/90 to-transparent pointer-events-none" />
 
-        <div className="relative">
+        <div className="relative min-w-0 max-w-full">
           {isRefactoring && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -126,7 +126,7 @@ export function EditorView({
             size="lg"
             onClick={onRefactor}
             disabled={isRefactoring || warp.bullets.length === 0}
-            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250_/_0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250_/_0.4)] transition-all duration-300 rounded-xl h-12 gap-2.5"
+            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250_/_0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250_/_0.4)] transition-all duration-300 rounded-xl h-12 gap-2.5 min-w-0"
           >
             {isRefactoring ? (
               <>

@@ -1,6 +1,18 @@
-# LLM Output Contract — Rewrite from Outline
+# LLM Output Contract
 
-The model MUST return structured JSON in the following format.
+## Outline (chapter → bullets)
+
+The outline model returns a JSON object with one key:
+
+- **bullets** — array of 3–8 objects, each with:
+  - **content** (string): short summary of the beat or scene.
+  - **anchor_text** (string): exact verbatim sentence from the input chapter that this bullet addresses (first occurrence or most significant sentence).
+
+---
+
+## Rewrite from Outline
+
+The rewrite model MUST return structured JSON in the following format.
 
 ## Required Output Schema
 

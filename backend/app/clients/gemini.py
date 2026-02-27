@@ -15,11 +15,14 @@ TIMEOUT_SECONDS = 60.0
 
 
 def _build_outline_prompt(request: OutlineRequest) -> str:
-    """Build the prompt to split chapter into 3–8 structural bullets."""
+    """Build the prompt to split chapter into 3–8 structural bullets with anchor text."""
     parts = [
         "You are a fiction editor. Split the following chapter into 3–8 structural "
         "bullet points that summarize the main beats or scenes.",
-        "Each bullet should be one short sentence. Return only valid JSON.",
+        "Each bullet must have two fields: content (one short summary sentence) and "
+        "anchor_text (one exact verbatim sentence from the chapter that this bullet addresses).",
+        "For anchor_text use either the first occurrence of that idea in the chapter, or the "
+        "single most significant sentence that led to the insight. Return only valid JSON.",
         "",
         "## Chapter",
         request.chapter.text.strip(),
@@ -31,7 +34,10 @@ def _build_outline_prompt(request: OutlineRequest) -> str:
         parts.append("")
         parts.append(f"Language: {request.chapter.language.strip()}")
     parts.append("")
-    parts.append('Return a JSON object with a single key "bullets" (array of 3–8 strings).')
+    parts.append(
+        'Return a JSON object with a single key "bullets": an array of 3–8 objects, '
+        'each with "content" (string) and "anchor_text" (string, verbatim from the chapter).'
+    )
     return "\n".join(parts)
 
 

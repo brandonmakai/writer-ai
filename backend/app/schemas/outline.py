@@ -12,12 +12,22 @@ class OutlineRequest(BaseModel):
     model_config = {"extra": "forbid"}
 
 
-class OutlineResponse(BaseModel):
-    """Structural bullets (3–8) derived from the chapter."""
+class BulletWithAnchor(BaseModel):
+    """One structural bullet with the verbatim sentence from the chapter it addresses."""
 
-    bullets: list[str] = Field(
+    content: str = Field(..., description="Short summary of the beat or scene.")
+    anchor_text: str = Field(
+        ...,
+        description="Exact verbatim sentence from the chapter that this bullet addresses.",
+    )
+
+
+class OutlineResponse(BaseModel):
+    """Structural bullets (3–8) derived from the chapter, each with anchor text."""
+
+    bullets: list[BulletWithAnchor] = Field(
         ...,
         min_length=STRUCTURAL_BULLETS_MIN,
         max_length=STRUCTURAL_BULLETS_MAX,
-        description="Structural bullet points summarizing the chapter.",
+        description="Structural bullet points, each with content and anchor_text from the chapter.",
     )

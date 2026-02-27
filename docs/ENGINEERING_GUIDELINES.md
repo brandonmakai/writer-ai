@@ -30,6 +30,19 @@ Use conventional scopes:
 
 Scopes should match folder or module structure.
 
+### Commit Examples
+chore(tooling): add ruff + pytest git automation
+- Add [pre-commit] and .pre-commit-config-yaml file to handle pre-commit test automations
+- Fix tests: add all more type annotations to test_rewrite_api.py file
+
+feat(api): add rewrite/outline endpoint with docs and test
+- Wire RewriteService and GeminiClient in deps; add POST
+  /api/v1/rewrite/outline
+- Document endpoint in backend README
+- Add test_rewrite_api with mock service override
+- Fix schemas: use min_length instead of deprecated min_items
+- Add pytest and pytest-asyncio as dev dependencies
+
 ---
 
 ## Testing & Pre-Commit Enforcement

@@ -71,7 +71,7 @@ Broken code must not be pushed to main.
 ## Frontend: Best Practices, Styles & Tests
 
 - **Stack**: Next.js 15+ (App Router), React 19, Tailwind v4. Frontend lives in `/frontend`.
-- **Styles**: Use Tailwind v4 utility classes. Use the shared `cn()` helper from `@/lib/utils` for conditional classes. Prefer design tokens (e.g. `text-foreground`, `bg-background`, `border-border`) over raw colors. The UI is mobile-first: use responsive padding (`--app-px` / safe-area in `globals.css`) and ≥44px touch targets for interactive elements.
+- **Styles**: Use Tailwind v4 utility classes. Use the shared `cn()` helper from `@/lib/utils` for conditional classes. Prefer design tokens (e.g. `text-foreground`, `bg-background`, `border-border`) over raw colors. The UI is mobile-first: use responsive padding (`--app-px` / safe-area in `globals.css`) and ≥44px touch targets for interactive elements. On small screens, triage "Other beats" stack vertically; the editor exposes structural beats via a header-triggered full-screen panel (below `md`).
 - **Structure**: `app/` for routes and layout, `components/` for UI, `lib/` for utilities and shared logic. Keep components focused; extract reusable logic into `lib/` or hooks.
 - **Unit tests**: Vitest + React Testing Library + jsdom. Config: `frontend/vitest.config.ts`. Put tests next to code (e.g. `lib/utils.test.ts`) or in a `__tests__` folder. Run with `npm run test` in `frontend/`.
 - **E2E / smoke**: Playwright in `frontend/e2e/`. Smoke test ensures homepage loads and the main chapter input is visible; add specs for critical flows. Run with `npm run smoke-test` in `frontend/`.

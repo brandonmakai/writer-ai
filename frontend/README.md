@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Tailwind v4** via PostCSS. Use utility classes and design tokens (e.g. `text-foreground`, `bg-background`, `border-border`).
 - Use the `cn()` helper from `@/lib/utils` for conditional or merged class names.
-- **Responsive**: The UI is built mobile-first. Horizontal padding uses `--app-px` and safe-area insets (see `app/globals.css`). Use responsive padding (e.g. `px-4 sm:px-6`) and at least 44px touch targets for interactive elements on small screens.
+- **Responsive**: The UI is built mobile-first. Horizontal padding uses `--app-px` and safe-area insets (see `app/globals.css`). Use responsive padding (e.g. `px-4 sm:px-6`) and at least 44px touch targets for interactive elements on small screens. Triage "Other beats" use a stacked layout on small screens; in the editor, structural beats are available via the header list icon (full-screen panel) below the `md` breakpoint.
 
 ## Tests
 

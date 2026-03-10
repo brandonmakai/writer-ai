@@ -68,3 +68,64 @@ def test_chapter_to_outline_returns_502_on_parse_failure() -> None:
             app.dependency_overrides.pop(get_outline_service, None)
         else:
             app.dependency_overrides[get_outline_service] = prev
+
+
+def test_chapter_to_outline_returns_429_after_5_attempts() -> None:
+    """Sixth successful outline request from same IP returns 429."""
+    for _ in range(5):
+        resp = client.post(
+            "/api/v1/chapter/outline",
+            json={"chapter": {"text": "Some chapter."}},
+        )
+        assert resp.status_code == 200, resp.text
+    resp6 = client.post(
+        "/api/v1/chapter/outline",
+        json={"chapter": {"text": "Another chapter."}},
+    )
+    assert resp6.status_code == 429
+    assert "5 free attempts" in resp6.json()["detail"]
+
+
+def test_chapter_to_outline_does_not_increment_on_502() -> None:
+    """A 502 parse failure does not consume a credit; user can still get 5 successes."""
+
+    class FailingOnceOutlineService:
+        call_count = 0
+
+        async def outline(self, request: OutlineRequest) -> OutlineResponse:  # noqa: ARG002
+            FailingOnceOutlineService.call_count += 1
+            if FailingOnceOutlineService.call_count == 1:
+                raise ValueError("Failed to parse Gemini response: bad json")
+            return OutlineResponse(
+                bullets=[
+                    BulletWithAnchor(content="Beat one.", anchor_text="Text one."),
+                    BulletWithAnchor(content="Beat two.", anchor_text="Text two."),
+                    BulletWithAnchor(content="Beat three.", anchor_text="Text three."),
+                ],
+                suggested_index=0,
+            )
+
+    prev_svc = app.dependency_overrides.get(get_outline_service)
+    app.dependency_overrides[get_outline_service] = lambda: FailingOnceOutlineService()
+    try:
+        resp_fail = client.post(
+            "/api/v1/chapter/outline",
+            json={"chapter": {"text": "Chapter."}},
+        )
+        assert resp_fail.status_code == 502
+        for _ in range(5):
+            resp = client.post(
+                "/api/v1/chapter/outline",
+                json={"chapter": {"text": "Chapter."}},
+            )
+            assert resp.status_code == 200, resp.text
+        resp_429 = client.post(
+            "/api/v1/chapter/outline",
+            json={"chapter": {"text": "Chapter."}},
+        )
+        assert resp_429.status_code == 429
+    finally:
+        if prev_svc is None:
+            app.dependency_overrides.pop(get_outline_service, None)
+        else:
+            app.dependency_overrides[get_outline_service] = prev_svc

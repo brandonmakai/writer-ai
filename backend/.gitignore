@@ -38,6 +38,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Usage DB (per-IP attempt limit)
+data/*.db
+
 # IDE and OS
 .idea/
 .vscode/

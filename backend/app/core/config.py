@@ -35,6 +35,19 @@ class Settings(BaseSettings):
         description="Allowed CORS origins for the frontend.",
     )
 
+    limit_usage_per_ip: bool = Field(
+        default=True,
+        description="Enforce per-IP attempt limit for outline/rewrite; set False to disable.",
+    )
+    max_attempts_per_ip: int = Field(
+        default=5,
+        description="Max successful outline/rewrite calls per IP when limit_usage_per_ip is True.",
+    )
+    usage_db_path: str = Field(
+        default="data/usage.db",
+        description="SQLite path for per-IP usage (use :memory: in tests).",
+    )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

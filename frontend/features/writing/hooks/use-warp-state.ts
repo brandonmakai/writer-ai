@@ -6,14 +6,13 @@ import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchOutline } from "@/lib/api"
 import { exampleChapter, exampleBullets } from "@/lib/example-data"
 
-export type WarpPhase = "landing" | "triage" | "editor"
+export type WarpPhase = "landing" | "editor"
 
 export function useWarpState() {
   const [phase, setPhase] = useState<WarpPhase>("landing")
   const [chapterText, setChapterText] = useState("")
   const [bullets, setBullets] = useState<StoryBullet[]>([])
   const [highlights, setHighlights] = useState<ChangeHighlight[]>([])
-  const [suggestedBulletId, setSuggestedBulletId] = useState<string | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [showTethers, setShowTethers] = useState(true)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -34,10 +33,8 @@ export function useWarpState() {
         anchor_text: b.anchor_text,
       }))
       setBullets(mapped)
-      const suggested = mapped[res.suggested_index]
-      setSuggestedBulletId(suggested?.id ?? mapped[0]?.id ?? null)
       setHighlights([])
-      setPhase("triage")
+      setPhase("editor")
     } catch (err) {
       console.error("Outline API error:", err)
       setAnalyzeError("Analysis failed. Please try again.")
@@ -50,36 +47,12 @@ export function useWarpState() {
     setAnalyzeError(null)
     setChapterText(exampleChapter)
     setBullets(exampleBullets)
-    setSuggestedBulletId(exampleBullets[2]?.id ?? null)
     setHighlights([])
-    setPhase("triage")
-  }, [])
-
-  const handleBulletsChangeFromTriage = useCallback(
-    (newBullets: StoryBullet[]) => {
-      setBullets(newBullets)
-      if (
-        suggestedBulletId &&
-        !newBullets.some((b) => b.id === suggestedBulletId)
-      ) {
-        setSuggestedBulletId(newBullets[0]?.id ?? null)
-      }
-    },
-    [suggestedBulletId]
-  )
-
-  const handleWeave = useCallback(() => {
     setPhase("editor")
   }, [])
 
   const handleBackToLanding = useCallback(() => {
     setPhase("landing")
-    setHighlights([])
-    setSuggestedBulletId(null)
-  }, [])
-
-  const handleBackToTriage = useCallback(() => {
-    setPhase("triage")
     setHighlights([])
   }, [])
 
@@ -98,8 +71,6 @@ export function useWarpState() {
     setBullets,
     highlights,
     setHighlights,
-    suggestedBulletId,
-    setSuggestedBulletId,
     hoveredIndex,
     setHoveredIndex,
     showTethers,
@@ -108,10 +79,7 @@ export function useWarpState() {
     analyzeError,
     handleAnalyze,
     handleTryExample,
-    handleBulletsChangeFromTriage,
-    handleWeave,
     handleBackToLanding,
-    handleBackToTriage,
     handleClearHighlights,
     wordCount,
   }

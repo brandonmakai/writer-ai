@@ -12,7 +12,7 @@ export interface WarpState {
   setHoveredIndex: (index: number | null) => void
   showTethers: boolean
   setShowTethers: (fn: (v: boolean) => boolean) => void
-  handleBackToTriage: () => void
+  handleBackToLanding: () => void
   handleClearHighlights: () => void
   wordCount: number
 }

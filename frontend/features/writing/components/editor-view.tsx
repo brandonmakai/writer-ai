@@ -65,7 +65,7 @@ export function EditorView({
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <EditorHeader
-        onBack={warp.handleBackToTriage}
+        onBack={warp.handleBackToLanding}
         wordCount={warp.wordCount}
         bulletCount={warp.bullets.length}
         highlightCount={warp.highlights.length}

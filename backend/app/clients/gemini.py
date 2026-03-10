@@ -19,6 +19,9 @@ TIMEOUT_SECONDS = 60.0
 # Retry 429 (rate limit) with exponential backoff
 MAX_RETRIES_429 = 3
 INITIAL_BACKOFF_SECONDS = 2.0
+# Retry outline parse failures (e.g. malformed JSON from Gemini)
+MAX_OUTLINE_PARSE_ATTEMPTS = 3
+RAW_RESPONSE_LOG_LIMIT = 2000
 
 
 async def _post_with_retry(
@@ -252,23 +255,45 @@ class GeminiClient:
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": generation_config,
         }
-        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-            resp = await _post_with_retry(
-                client,
-                url,
-                headers={"x-goog-api-key": self._api_key},
-                payload=payload,
-                log_label="Gemini outline_chapter",
-            )
-        body = resp.json()
-        try:
-            text = _extract_response_text(body)
-            result = _parse_outline_response(text)
-            if self._dev_log:
-                logger.info(
-                    "outline_chapter response (dev): %s",
-                    json.dumps(result.model_dump(), indent=2),
+        for attempt in range(MAX_OUTLINE_PARSE_ATTEMPTS):
+            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+                resp = await _post_with_retry(
+                    client,
+                    url,
+                    headers={"x-goog-api-key": self._api_key},
+                    payload=payload,
+                    log_label="Gemini outline_chapter",
                 )
-            return result
-        except (KeyError, IndexError, json.JSONDecodeError) as e:
-            raise ValueError(f"Failed to parse Gemini response: {e}") from e
+            body = resp.json()
+            text: str | None = None
+            try:
+                text = _extract_response_text(body)
+                result = _parse_outline_response(text)
+                if self._dev_log:
+                    logger.info(
+                        "outline_chapter response (dev): %s",
+                        json.dumps(result.model_dump(), indent=2),
+                    )
+                return result
+            except (KeyError, IndexError, json.JSONDecodeError) as e:
+                raw_preview: str = (
+                    (text[:RAW_RESPONSE_LOG_LIMIT] + "... [truncated]")
+                    if text and len(text) > RAW_RESPONSE_LOG_LIMIT
+                    else (text or "(extract failed)")
+                )
+                is_final = attempt == MAX_OUTLINE_PARSE_ATTEMPTS - 1
+                if is_final:
+                    logger.error(
+                        "Gemini outline_chapter parse failed (final): %s; raw (truncated): %s",
+                        e,
+                        raw_preview,
+                    )
+                else:
+                    logger.warning(
+                        "Gemini outline_chapter parse failed, retrying: %s; raw (truncated): %s",
+                        e,
+                        raw_preview,
+                    )
+                if is_final:
+                    raise ValueError(f"Failed to parse Gemini response: {e}") from e
+        raise AssertionError("unreachable")  # loop always returns or raises

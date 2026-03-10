@@ -1,6 +1,6 @@
 """Chapter endpoints: outline (chapter → bullets) and rewrite (chapter + bullets → refactored)."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.deps import get_outline_service, get_rewrite_service
 from app.domain.services import OutlineService, RewriteService
@@ -21,7 +21,15 @@ async def chapter_to_outline(
     service: OutlineService = Depends(get_outline_service),
 ) -> OutlineResponse:
     """Split the given chapter into 3–8 structural bullet points."""
-    return await service.outline(request)
+    try:
+        return await service.outline(request)
+    except ValueError as e:
+        if "Failed to parse Gemini" in str(e):
+            raise HTTPException(
+                status_code=502,
+                detail="Outline generation failed. Please try again.",
+            ) from e
+        raise
 
 
 @router.post(

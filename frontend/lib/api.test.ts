@@ -27,7 +27,10 @@ describe("fetchOutline", () => {
     mockFetch.mockResolvedValueOnce(
       new Response(JSON.stringify(resBody), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Remaining-Attempts": "4",
+        },
       })
     )
 
@@ -42,7 +45,8 @@ describe("fetchOutline", () => {
         body: JSON.stringify(body),
       })
     )
-    expect(result).toEqual(resBody)
+    expect(result.outline).toEqual(resBody)
+    expect(result.remainingAttempts).toBe(4)
   })
 
   it("throws on non-OK response with parsed error message", async () => {
@@ -109,7 +113,10 @@ describe("fetchRewrite", () => {
     mockFetch.mockResolvedValueOnce(
       new Response(JSON.stringify(resBody), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Remaining-Attempts": "3",
+        },
       })
     )
 
@@ -124,7 +131,8 @@ describe("fetchRewrite", () => {
         body: JSON.stringify(body),
       })
     )
-    expect(result).toEqual(resBody)
+    expect(result.rewrite).toEqual(resBody)
+    expect(result.remainingAttempts).toBe(3)
   })
 
   it("throws on non-OK response", async () => {

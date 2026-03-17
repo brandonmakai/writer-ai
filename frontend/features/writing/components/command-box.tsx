@@ -12,6 +12,7 @@ interface CommandBoxProps {
   isUnfolded: boolean
   isAnalyzing?: boolean
   analyzeError?: string | null
+  remainingAttempts?: number | null
 }
 
 export function CommandBox({
@@ -21,6 +22,7 @@ export function CommandBox({
   onTryExample,
   isAnalyzing = false,
   analyzeError = null,
+  remainingAttempts = null,
 }: CommandBoxProps) {
   return (
     <motion.div
@@ -111,6 +113,11 @@ export function CommandBox({
             {isAnalyzing ? "Analyzing…" : "Analyze Structure"}
           </Button>
         </div>
+        {remainingAttempts !== null && (
+          <p className="text-center text-xs text-muted-foreground">
+            {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
+          </p>
+        )}
         {analyzeError && (
           <p role="alert" className="text-center text-sm text-destructive">
             {analyzeError}

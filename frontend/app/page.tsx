@@ -20,6 +20,7 @@ export default function WriterAIPage() {
     setChapterText: warp.setChapterText,
     setHighlights: warp.setHighlights,
     setBullets: warp.setBullets,
+    setRemainingAttempts: warp.setRemainingAttempts,
   })
 
   return (
@@ -33,6 +34,7 @@ export default function WriterAIPage() {
             onTryExample={warp.handleTryExample}
             isAnalyzing={warp.isAnalyzing}
             analyzeError={warp.analyzeError}
+            remainingAttempts={warp.remainingAttempts}
           />
         )}
         {warp.phase === "editor" && (
@@ -43,6 +45,7 @@ export default function WriterAIPage() {
             refactorStepLabel={refactorStepLabel}
             onRefactor={handleRefactor}
             refactorError={refactorError}
+            remainingAttempts={warp.remainingAttempts}
           />
         )}
       </AnimatePresence>

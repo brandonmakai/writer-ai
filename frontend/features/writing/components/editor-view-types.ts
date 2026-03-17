@@ -15,4 +15,5 @@ export interface WarpState {
   handleBackToLanding: () => void
   handleClearHighlights: () => void
   wordCount: number
+  remainingAttempts: number | null
 }

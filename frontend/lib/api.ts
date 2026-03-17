@@ -71,13 +71,22 @@ async function parseErrorResponse(res: Response): Promise<string> {
   return text || res.statusText;
 }
 
+function parseRemainingAttempts(res: Response): number | null {
+  const raw = res.headers.get("X-Remaining-Attempts");
+  if (raw === null) return null;
+  const n = parseInt(raw, 10);
+  return Number.isNaN(n) ? null : n;
+}
+
 /**
  * Extract structural bullets from chapter text.
  * POST /api/v1/chapter/outline
+ * Returns outline and remaining attempt count (when limited by backend).
  */
-export async function fetchOutline(
-  body: OutlineRequest
-): Promise<OutlineResponse> {
+export async function fetchOutline(body: OutlineRequest): Promise<{
+  outline: OutlineResponse;
+  remainingAttempts: number | null;
+}> {
   const res = await fetch(`${API_BASE}/api/v1/chapter/outline`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -87,16 +96,19 @@ export async function fetchOutline(
     const message = await parseErrorResponse(res);
     throw new Error(message || `Outline failed: ${res.status}`);
   }
-  return res.json() as Promise<OutlineResponse>;
+  const outline = (await res.json()) as OutlineResponse;
+  return { outline, remainingAttempts: parseRemainingAttempts(res) };
 }
 
 /**
  * Refactor chapter from outline (chapter + bullets).
  * POST /api/v1/chapter/rewrite
+ * Returns rewrite result and remaining attempt count (when limited by backend).
  */
-export async function fetchRewrite(
-  body: RewriteRequest
-): Promise<RewriteResponse> {
+export async function fetchRewrite(body: RewriteRequest): Promise<{
+  rewrite: RewriteResponse;
+  remainingAttempts: number | null;
+}> {
   const res = await fetch(`${API_BASE}/api/v1/chapter/rewrite`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -106,5 +118,6 @@ export async function fetchRewrite(
     const message = await parseErrorResponse(res);
     throw new Error(message || `Rewrite failed: ${res.status}`);
   }
-  return res.json() as Promise<RewriteResponse>;
+  const rewrite = (await res.json()) as RewriteResponse;
+  return { rewrite, remainingAttempts: parseRemainingAttempts(res) };
 }

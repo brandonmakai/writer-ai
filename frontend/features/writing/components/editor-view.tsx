@@ -20,6 +20,7 @@ export interface EditorViewProps {
   refactorStepLabel?: string
   onRefactor: () => void
   refactorError?: string | null
+  remainingAttempts?: number | null
 }
 
 export function EditorView({
@@ -29,6 +30,7 @@ export function EditorView({
   refactorStepLabel = "",
   onRefactor,
   refactorError = null,
+  remainingAttempts = null,
 }: EditorViewProps) {
   const BEATS_TIP_SEEN_KEY = "writer-ai-beats-tip-seen"
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -218,6 +220,11 @@ export function EditorView({
               </>
             )}
           </Button>
+          {remainingAttempts !== null && (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
+            </p>
+          )}
           {refactorError && (
             <p role="alert" className="mt-3 text-center text-sm text-destructive">
               {refactorError}

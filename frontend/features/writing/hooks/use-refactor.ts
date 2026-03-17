@@ -19,6 +19,7 @@ export interface UseRefactorOptions {
   setChapterText: (text: string) => void
   setHighlights: (highlights: ChangeHighlight[]) => void
   setBullets: (bullets: StoryBullet[]) => void
+  setRemainingAttempts?: (n: number | null) => void
 }
 
 export function useRefactor({
@@ -27,6 +28,7 @@ export function useRefactor({
   setChapterText,
   setHighlights,
   setBullets,
+  setRemainingAttempts,
 }: UseRefactorOptions) {
   const [isRefactoring, setIsRefactoring] = useState(false)
   const [refactorProgress, setRefactorProgress] = useState(0)
@@ -52,30 +54,46 @@ export function useRefactor({
     setRefactorStepIndex(0)
     setRefactorError(null)
     try {
-      const res = await fetchRewrite({
+      const { rewrite, remainingAttempts: n } = await fetchRewrite({
         chapter: { text: chapterText },
         bullets: bullets.map((b) => b.content),
       })
-      setChapterText(res.chapter_text)
+      setChapterText(rewrite.chapter_text)
       setHighlights(
-        res.change_highlights.map((h) => ({ updated: h.updated, original: h.original }))
+        rewrite.change_highlights.map((h) => ({
+          updated: h.updated,
+          original: h.original,
+        }))
       )
-      const mappedBullets: StoryBullet[] = res.internal_structure.bullets.map((b, i) => ({
-        id: crypto.randomUUID(),
-        label: `Beat ${i + 1}`,
-        content: b.content,
-        anchor_text: b.anchor_text,
-      }))
+      const mappedBullets: StoryBullet[] = rewrite.internal_structure.bullets.map(
+        (b, i) => ({
+          id: crypto.randomUUID(),
+          label: `Beat ${i + 1}`,
+          content: b.content,
+          anchor_text: b.anchor_text,
+        })
+      )
       setBullets(mappedBullets)
+      setRemainingAttempts?.(n ?? null)
       setRefactorProgress(100)
     } catch (err) {
       console.error("Rewrite API error:", err)
-      setRefactorError("Refactor failed. Please try again.")
+      setRefactorError(
+        err instanceof Error ? err.message : "Refactor failed. Please try again."
+      )
     } finally {
       setIsRefactoring(false)
       setRefactorProgress(0)
     }
-  }, [isRefactoring, bullets, chapterText, setChapterText, setHighlights, setBullets])
+  }, [
+    isRefactoring,
+    bullets,
+    chapterText,
+    setChapterText,
+    setHighlights,
+    setBullets,
+    setRemainingAttempts,
+  ])
 
   return {
     isRefactoring,

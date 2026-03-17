@@ -10,6 +10,7 @@ interface LandingViewProps {
   onTryExample: () => void
   isAnalyzing?: boolean
   analyzeError?: string | null
+  remainingAttempts?: number | null
 }
 
 export function LandingView({
@@ -19,6 +20,7 @@ export function LandingView({
   onTryExample,
   isAnalyzing = false,
   analyzeError = null,
+  remainingAttempts = null,
 }: LandingViewProps) {
   return (
     <motion.div
@@ -45,6 +47,7 @@ export function LandingView({
         isUnfolded={false}
         isAnalyzing={isAnalyzing}
         analyzeError={analyzeError}
+        remainingAttempts={remainingAttempts}
       />
 
       <motion.p

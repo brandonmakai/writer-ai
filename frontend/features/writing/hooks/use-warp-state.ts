@@ -17,16 +17,17 @@ export function useWarpState() {
   const [showTethers, setShowTethers] = useState(true)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analyzeError, setAnalyzeError] = useState<string | null>(null)
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null)
 
   const handleAnalyze = useCallback(async () => {
     if (!chapterText.trim()) return
     setIsAnalyzing(true)
     setAnalyzeError(null)
     try {
-      const res = await fetchOutline({
+      const { outline, remainingAttempts: n } = await fetchOutline({
         chapter: { text: chapterText.trim() },
       })
-      const mapped: StoryBullet[] = res.bullets.map((b, i) => ({
+      const mapped: StoryBullet[] = outline.bullets.map((b, i) => ({
         id: crypto.randomUUID(),
         label: `Beat ${i + 1}`,
         content: b.content,
@@ -34,10 +35,13 @@ export function useWarpState() {
       }))
       setBullets(mapped)
       setHighlights([])
+      setRemainingAttempts(n ?? null)
       setPhase("editor")
     } catch (err) {
       console.error("Outline API error:", err)
-      setAnalyzeError("Analysis failed. Please try again.")
+      setAnalyzeError(
+        err instanceof Error ? err.message : "Analysis failed. Please try again."
+      )
     } finally {
       setIsAnalyzing(false)
     }
@@ -77,6 +81,8 @@ export function useWarpState() {
     setShowTethers,
     isAnalyzing,
     analyzeError,
+    remainingAttempts,
+    setRemainingAttempts,
     handleAnalyze,
     handleTryExample,
     handleBackToLanding,

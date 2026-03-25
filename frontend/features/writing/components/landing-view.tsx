@@ -11,6 +11,7 @@ interface LandingViewProps {
   isAnalyzing?: boolean
   analyzeError?: string | null
   remainingAttempts?: number | null
+  wordCount?: number
 }
 
 export function LandingView({
@@ -21,6 +22,7 @@ export function LandingView({
   isAnalyzing = false,
   analyzeError = null,
   remainingAttempts = null,
+  wordCount = 0,
 }: LandingViewProps) {
   return (
     <motion.div
@@ -48,6 +50,7 @@ export function LandingView({
         isAnalyzing={isAnalyzing}
         analyzeError={analyzeError}
         remainingAttempts={remainingAttempts}
+        wordCount={wordCount}
       />
 
       <motion.p

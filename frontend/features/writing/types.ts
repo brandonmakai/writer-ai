@@ -24,3 +24,8 @@ export const BEAT_TAG_COLORS: BeatTagColor[] = [
   { bg: "rgba(251,113,133,0.12)", text: "oklch(0.70 0.18 15)", border: "rgba(251,113,133,0.18)" },
   { bg: "rgba(34,211,238,0.12)", text: "oklch(0.76 0.12 200)", border: "rgba(34,211,238,0.18)" },
 ]
+
+// TODO: Remove word counts post-launch in favor of chapter segmentation
+/** Soft word-count guidance (UI-only; backend hard cap is in app/schemas/common.py). */
+export const SOFT_WORD_LIMIT = 2000
+export const HARD_WORD_LIMIT = 2500

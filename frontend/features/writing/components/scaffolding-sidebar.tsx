@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, KeyboardEvent } from "react"
 import { motion, AnimatePresence, Reorder } from "framer-motion"
-import { GripVertical, Plus, X, Link2, Link2Off } from "lucide-react"
+import { GripVertical, X, Link2, Link2Off, ArrowUp, Loader2 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import type { StoryBullet } from "@/features/writing/types"
 import { BEAT_TAG_COLORS } from "@/features/writing/types"
+import { fetchOutline } from "@/lib/api"
 
 export type { StoryBullet }
 
@@ -17,6 +18,8 @@ interface ScaffoldingSidebarProps {
   onBulletHover?: (index: number | null) => void
   showTethers?: boolean
   onToggleTethers?: () => void
+  chapterText?: string
+  onRemainingAttemptsChange?: (n: number | null) => void
 }
 
 function BulletCard({
@@ -121,6 +124,108 @@ function BulletCard({
   )
 }
 
+function BeatAgentBox({
+  chapterText,
+  onBulletsChange,
+  onRemainingAttemptsChange,
+}: {
+  chapterText?: string
+  onBulletsChange: (bullets: StoryBullet[]) => void
+  onRemainingAttemptsChange?: (n: number | null) => void
+}) {
+  const [prompt, setPrompt] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const canSubmit = prompt.trim().length > 0 && !!chapterText?.trim() && !isGenerating
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return
+    setIsGenerating(true)
+    setError(null)
+    try {
+      const { outline, remainingAttempts } = await fetchOutline({
+        chapter: { text: chapterText!.trim(), tone: prompt.trim() },
+      })
+      const mapped: StoryBullet[] = outline.bullets.map((b, i) => ({
+        id: crypto.randomUUID(),
+        label: `Beat ${i + 1}`,
+        content: b.content,
+        anchor_text: b.anchor_text,
+      }))
+      onBulletsChange(mapped)
+      onRemainingAttemptsChange?.(remainingAttempts)
+      setPrompt("")
+      textareaRef.current?.focus()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Generation failed. Please try again.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div
+        className={`relative rounded-xl border transition-all duration-200 ${
+          error
+            ? "border-destructive/60"
+            : "border-border/70 hover:border-border focus-within:border-primary/60 focus-within:shadow-[0_0_16px_oklch(0.65_0.18_250_/_0.12)]"
+        }`}
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04))",
+        }}
+      >
+        <textarea
+          ref={textareaRef}
+          value={prompt}
+          onChange={(e) => {
+            setPrompt(e.target.value)
+            if (error) setError(null)
+          }}
+          onKeyDown={handleKeyDown}
+          disabled={isGenerating}
+          rows={3}
+          placeholder={
+            chapterText?.trim()
+              ? "Describe the beats you want to generate…"
+              : "Paste a chapter first to generate beats"
+          }
+          className="w-full bg-transparent text-[12px] text-foreground/80 placeholder:text-muted-foreground/55 leading-relaxed resize-none focus:outline-none px-3 pt-3 pb-9 disabled:opacity-50"
+        />
+        <div className="absolute bottom-2 right-2 flex items-center gap-2">
+          <span className="text-[9px] text-muted-foreground/50 select-none">↵ generate</span>
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className="flex items-center justify-center size-6 rounded-md bg-primary/80 hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-primary-foreground"
+            aria-label="Generate beats"
+          >
+            {isGenerating ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <ArrowUp className="size-3" />
+            )}
+          </button>
+        </div>
+      </div>
+      {error && (
+        <p role="alert" className="text-[10px] text-destructive px-1">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function ScaffoldingSidebar({
   bullets,
   onBulletsChange,
@@ -128,6 +233,8 @@ export function ScaffoldingSidebar({
   onBulletHover,
   showTethers = true,
   onToggleTethers,
+  chapterText,
+  onRemainingAttemptsChange,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -143,20 +250,6 @@ export function ScaffoldingSidebar({
 
   const deleteBullet = (id: string) => {
     onBulletsChange(bullets.filter((b) => b.id !== id))
-  }
-
-  const addBullet = () => {
-    onBulletsChange([
-      ...bullets,
-      {
-        id: crypto.randomUUID(),
-        label: "",
-        content: "",
-      },
-    ])
-    setTimeout(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
-    }, 100)
   }
 
   return (
@@ -205,15 +298,16 @@ export function ScaffoldingSidebar({
       </ScrollArea>
 
       <div className="flex-shrink-0 px-3 py-3 pt-0 space-y-2 border-t border-border/60">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={addBullet}
-          className="w-full text-xs text-muted-foreground/50 hover:text-muted-foreground border border-dashed border-border/40 hover:border-border/70 hover:bg-secondary/30 h-9 rounded-lg"
-        >
-          <Plus className="size-3 mr-1.5" />
-          Add Structural Step
-        </Button>
+        <BeatAgentBox
+          chapterText={chapterText}
+          onBulletsChange={(newBullets) => {
+            onBulletsChange(newBullets)
+            setTimeout(() => {
+              scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+            }, 100)
+          }}
+          onRemainingAttemptsChange={onRemainingAttemptsChange}
+        />
         {onToggleTethers && (
           <Button
             variant="ghost"

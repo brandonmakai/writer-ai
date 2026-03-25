@@ -35,6 +35,7 @@ export default function WriterAIPage() {
             isAnalyzing={warp.isAnalyzing}
             analyzeError={warp.analyzeError}
             remainingAttempts={warp.remainingAttempts}
+            wordCount={warp.wordCount}
           />
         )}
         {warp.phase === "editor" && (

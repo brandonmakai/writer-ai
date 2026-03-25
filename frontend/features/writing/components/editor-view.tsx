@@ -12,6 +12,7 @@ import { TetherOverlay } from "./tether-overlay"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import type { WarpState } from "./editor-view-types"
+import { HARD_WORD_LIMIT, SOFT_WORD_LIMIT } from "@/features/writing/types"
 
 export interface EditorViewProps {
   warp: WarpState
@@ -37,6 +38,7 @@ export function EditorView({
   const isMobile = useIsMobile()
   const [bulletsDialogOpen, setBulletsDialogOpen] = useState(false)
   const [highlightBeatsTrigger, setHighlightBeatsTrigger] = useState(false)
+  const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
 
   useEffect(() => {
     if (!isMobile || typeof sessionStorage === "undefined" || sessionStorage.getItem(BEATS_TIP_SEEN_KEY)) return
@@ -141,6 +143,8 @@ export function EditorView({
             onBulletHover={warp.setHoveredIndex}
             showTethers={warp.showTethers}
             onToggleTethers={() => warp.setShowTethers((v) => !v)}
+            chapterText={warp.chapterText}
+            onRemainingAttemptsChange={warp.setRemainingAttempts}
           />
         </motion.div>
 
@@ -168,6 +172,8 @@ export function EditorView({
                 onBulletHover={warp.setHoveredIndex}
                 showTethers={warp.showTethers}
                 onToggleTethers={() => warp.setShowTethers((v) => !v)}
+                chapterText={warp.chapterText}
+                onRemainingAttemptsChange={warp.setRemainingAttempts}
               />
             </div>
           </DialogContent>
@@ -205,8 +211,8 @@ export function EditorView({
           <Button
             size="lg"
             onClick={onRefactor}
-            disabled={isRefactoring || warp.bullets.length === 0}
-            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250_/_0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250_/_0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
+            disabled={isRefactoring || warp.bullets.length === 0 || overHardLimit}
+            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250/0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250/0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
           >
             {isRefactoring ? (
               <>
@@ -220,11 +226,23 @@ export function EditorView({
               </>
             )}
           </Button>
-          {remainingAttempts !== null && (
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
+          <div className="mt-2 space-y-1 text-center">
+            <p className="text-xs text-muted-foreground">
+              {warp.wordCount} word{warp.wordCount !== 1 ? "s" : ""} · best results under{" "}
+              {SOFT_WORD_LIMIT.toLocaleString()} words
             </p>
-          )}
+            {overHardLimit && (
+              <p className="text-xs text-destructive">
+                This preview is for single chapters up to {HARD_WORD_LIMIT.toLocaleString()} words.
+                Please shorten or split your text.
+              </p>
+            )}
+            {remainingAttempts !== null && (
+              <p className="text-xs text-muted-foreground">
+                {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
+              </p>
+            )}
+          </div>
           {refactorError && (
             <p role="alert" className="mt-3 text-center text-sm text-destructive">
               {refactorError}

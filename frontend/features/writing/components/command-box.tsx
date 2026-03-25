@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Sparkles, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { HARD_WORD_LIMIT, SOFT_WORD_LIMIT } from "@/features/writing/types"
 
 interface CommandBoxProps {
   text: string
@@ -13,6 +14,7 @@ interface CommandBoxProps {
   isAnalyzing?: boolean
   analyzeError?: string | null
   remainingAttempts?: number | null
+  wordCount?: number
 }
 
 export function CommandBox({
@@ -23,7 +25,10 @@ export function CommandBox({
   isAnalyzing = false,
   analyzeError = null,
   remainingAttempts = null,
+  wordCount = 0,
 }: CommandBoxProps) {
+  const overHardLimit = wordCount > HARD_WORD_LIMIT
+
   return (
     <motion.div
       layout
@@ -106,12 +111,26 @@ export function CommandBox({
           </Button>
           <Button
             onClick={onAnalyze}
-            disabled={!text.trim() || isAnalyzing}
+            disabled={!text.trim() || isAnalyzing || overHardLimit}
             size="default"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed text-sm px-6 shadow-[0_0_24px_oklch(0.65_0.18_250_/_0.2)] hover:shadow-[0_0_32px_oklch(0.65_0.18_250_/_0.35)] transition-all duration-300"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed text-sm px-6 shadow-[0_0_24px_oklch(0.65_0.18_250/0.2)] hover:shadow-[0_0_32px_oklch(0.65_0.18_250/0.35)] transition-all duration-300"
           >
             {isAnalyzing ? "Analyzing…" : "Analyze Structure"}
           </Button>
+        </div>
+        <div className="space-y-1 text-center">
+          {wordCount > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {wordCount} word{wordCount !== 1 ? "s" : ""} · best results under{" "}
+              {SOFT_WORD_LIMIT.toLocaleString()} words
+            </p>
+          )}
+          {overHardLimit && (
+            <p className="text-xs text-destructive">
+              This preview is for single chapters up to {HARD_WORD_LIMIT.toLocaleString()} words.
+              Please shorten or split your text.
+            </p>
+          )}
         </div>
         {remainingAttempts !== null && (
           <p className="text-center text-xs text-muted-foreground">

@@ -16,4 +16,5 @@ export interface WarpState {
   handleClearHighlights: () => void
   wordCount: number
   remainingAttempts: number | null
+  setRemainingAttempts: (n: number | null) => void
 }

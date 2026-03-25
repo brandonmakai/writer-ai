@@ -213,12 +213,12 @@ export function EditorView({
       >
         <div className="absolute inset-0 bg-linear-to-t from-background via-background/90 to-transparent pointer-events-none" />
 
-        <div className="relative min-w-0 max-w-full">
+        <div className="relative min-w-0 max-w-full flex flex-col items-center">
           {isRefactoring && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute -inset-1.5 rounded-2xl overflow-hidden"
+              className="absolute -inset-1.5 rounded-2xl overflow-hidden pointer-events-none"
             >
               <div
                 className="h-full rounded-2xl transition-all duration-300"
@@ -229,46 +229,48 @@ export function EditorView({
             </motion.div>
           )}
 
-          <Button
-            size="lg"
-            onClick={onRefactor}
-            disabled={isRefactoring || warp.bullets.length === 0 || overHardLimit}
-            className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250/0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250/0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
-          >
-            {isRefactoring ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>{refactorStepLabel || "Weaving…"}</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="size-4" />
-                Refactor Chapter
-              </>
-            )}
-          </Button>
-          <div className="mt-2 space-y-1 text-center">
-            <p className="text-xs text-muted-foreground">
-              {warp.wordCount} word{warp.wordCount !== 1 ? "s" : ""} · best results under{" "}
-              {SOFT_WORD_LIMIT.toLocaleString()} words
-            </p>
-            {overHardLimit && (
-              <p className="text-xs text-destructive">
-                This preview is for single chapters up to {HARD_WORD_LIMIT.toLocaleString()} words.
-                Please shorten or split your text.
-              </p>
-            )}
-            {remainingAttempts !== null && (
+          <div className="relative flex flex-col items-center">
+            <Button
+              size="lg"
+              onClick={onRefactor}
+              disabled={isRefactoring || warp.bullets.length === 0 || overHardLimit}
+              className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250/0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250/0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
+            >
+              {isRefactoring ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>{refactorStepLabel || "Weaving…"}</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="size-4" />
+                  Refactor Chapter
+                </>
+              )}
+            </Button>
+            <div className="mt-2 space-y-1 flex flex-col items-center text-center max-w-[min(100%,18rem)] sm:max-w-sm">
               <p className="text-xs text-muted-foreground">
-                {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
+                {warp.wordCount} word{warp.wordCount !== 1 ? "s" : ""} · best results under{" "}
+                {SOFT_WORD_LIMIT.toLocaleString()} words
+              </p>
+              {overHardLimit && (
+                <p className="text-xs text-destructive">
+                  This preview is for single chapters up to {HARD_WORD_LIMIT.toLocaleString()} words.
+                  Please shorten or split your text.
+                </p>
+              )}
+              {remainingAttempts !== null && (
+                <p className="text-xs text-muted-foreground">
+                  {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
+                </p>
+              )}
+            </div>
+            {refactorError && (
+              <p role="alert" className="mt-3 max-w-sm text-center text-sm text-destructive">
+                {refactorError}
               </p>
             )}
           </div>
-          {refactorError && (
-            <p role="alert" className="mt-3 text-center text-sm text-destructive">
-              {refactorError}
-            </p>
-          )}
         </div>
       </motion.div>
     </motion.div>

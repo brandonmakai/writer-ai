@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
-import { fetchRewrite } from "@/lib/api"
+import { fetchRewrite, fetchEdit } from "@/lib/api"
 
 const REFACTOR_STEP_LABELS = [
   "Analyzing structure…",
@@ -34,6 +34,8 @@ export function useRefactor({
   const [refactorProgress, setRefactorProgress] = useState(0)
   const [refactorStepIndex, setRefactorStepIndex] = useState(0)
   const [refactorError, setRefactorError] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isRefactoring) return
@@ -95,11 +97,61 @@ export function useRefactor({
     setRemainingAttempts,
   ])
 
+  const handleEdit = useCallback(
+    async (instruction: string) => {
+      if (isEditing || bullets.length === 0 || !instruction.trim()) return
+      setIsEditing(true)
+      setEditError(null)
+      try {
+        const { edit, remainingAttempts: n } = await fetchEdit({
+          chapter: { text: chapterText },
+          bullets: bullets.map((b) => b.content),
+          instruction,
+        })
+        setChapterText(edit.chapter_text)
+        setHighlights(
+          edit.change_highlights.map((h) => ({
+            updated: h.updated,
+            original: h.original,
+          }))
+        )
+        const mappedBullets: StoryBullet[] =
+          edit.internal_structure.bullets.map((b, i) => ({
+            id: crypto.randomUUID(),
+            label: `Beat ${i + 1}`,
+            content: b.content,
+            anchor_text: b.anchor_text,
+          }))
+        setBullets(mappedBullets)
+        setRemainingAttempts?.(n ?? null)
+      } catch (err) {
+        console.error("Edit API error:", err)
+        setEditError(
+          err instanceof Error ? err.message : "Edit failed. Please try again."
+        )
+      } finally {
+        setIsEditing(false)
+      }
+    },
+    [
+      isEditing,
+      bullets,
+      chapterText,
+      setChapterText,
+      setHighlights,
+      setBullets,
+      setRemainingAttempts,
+    ]
+  )
+
   return {
     isRefactoring,
     refactorProgress,
     refactorStepLabel,
     handleRefactor,
     refactorError,
+    isEditing,
+    handleEdit,
+    editError,
   }
 }

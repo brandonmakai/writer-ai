@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from app.core.usage import UsageStore, get_client_ip
+from app.core.usage import UsageTracker, get_client_ip
 
 
 def test_get_client_ip_uses_x_forwarded_for() -> None:
@@ -45,26 +45,26 @@ def test_get_client_ip_unknown_when_no_client() -> None:
     assert get_client_ip(request) == "unknown"
 
 
-def test_usage_store_get_count_returns_zero_for_new_ip() -> None:
-    """New IP has used_count 0."""
-    store = UsageStore(":memory:")
-    assert store.get_count("1.2.3.4") == 0
+def test_usage_tracker_get_count_returns_zero_for_new_ip() -> None:
+    """New IP has count 0."""
+    tracker = UsageTracker(":memory:")
+    assert tracker.get_count("1.2.3.4") == 0
 
 
-def test_usage_store_increment_and_get_count() -> None:
+def test_usage_tracker_increment_and_get_count() -> None:
     """Increment increases count; get_count returns it."""
-    store = UsageStore(":memory:")
-    store.increment("10.0.0.1")
-    assert store.get_count("10.0.0.1") == 1
-    store.increment("10.0.0.1")
-    assert store.get_count("10.0.0.1") == 2
+    tracker = UsageTracker(":memory:")
+    tracker.increment("10.0.0.1")
+    assert tracker.get_count("10.0.0.1") == 1
+    tracker.increment("10.0.0.1")
+    assert tracker.get_count("10.0.0.1") == 2
 
 
-def test_usage_store_different_ips_independent() -> None:
+def test_usage_tracker_different_ips_independent() -> None:
     """Different IPs have independent counts."""
-    store = UsageStore(":memory:")
-    store.increment("1.1.1.1")
-    store.increment("2.2.2.2")
-    store.increment("1.1.1.1")
-    assert store.get_count("1.1.1.1") == 2
-    assert store.get_count("2.2.2.2") == 1
+    tracker = UsageTracker(":memory:")
+    tracker.increment("1.1.1.1")
+    tracker.increment("2.2.2.2")
+    tracker.increment("1.1.1.1")
+    assert tracker.get_count("1.1.1.1") == 2
+    assert tracker.get_count("2.2.2.2") == 1

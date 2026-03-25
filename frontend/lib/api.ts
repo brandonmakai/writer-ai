@@ -121,3 +121,46 @@ export async function fetchRewrite(body: RewriteRequest): Promise<{
   const rewrite = (await res.json()) as RewriteResponse;
   return { rewrite, remainingAttempts: parseRemainingAttempts(res) };
 }
+
+/** Request for micro-edit endpoint. */
+export interface EditRequest {
+  chapter: ChapterBase;
+  bullets: string[];
+  instruction: string;
+}
+
+/** Response from micro-edit endpoint. */
+export interface EditResponse {
+  chapter_text: string;
+  change_highlights: ChangeHighlightDto[];
+  internal_structure: {
+    bullets: BulletWithAnchor[];
+    scene_summaries: Array<{
+      summary: string;
+      characters: string[];
+      purpose: string;
+    }>;
+  };
+  edits_applied: number;
+}
+
+/**
+ * Apply a targeted micro-edit to the chapter.
+ * POST /api/v1/chapter/edit
+ */
+export async function fetchEdit(body: EditRequest): Promise<{
+  edit: EditResponse;
+  remainingAttempts: number | null;
+}> {
+  const res = await fetch(`${API_BASE}/api/v1/chapter/edit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const message = await parseErrorResponse(res);
+    throw new Error(message || `Edit failed: ${res.status}`);
+  }
+  const edit = (await res.json()) as EditResponse;
+  return { edit, remainingAttempts: parseRemainingAttempts(res) };
+}

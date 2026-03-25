@@ -1,15 +1,17 @@
-"""Chapter endpoints: outline (chapter → bullets) and rewrite (chapter + bullets → refactored)."""
+"""Chapter endpoints: outline, rewrite, and micro-edit."""
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.core.deps import (
     UsageTracker,
+    get_edit_service,
     get_outline_service,
     get_rewrite_service,
     get_usage_tracker,
 )
 from app.core.usage import get_client_ip
-from app.domain.services import OutlineService, RewriteService
+from app.domain.services import EditService, OutlineService, RewriteService
+from app.schemas.edit import EditRequest, EditResponse
 from app.schemas.outline import OutlineRequest, OutlineResponse
 from app.schemas.rewrite import RewriteRequest, RewriteResponse
 
@@ -63,6 +65,36 @@ async def rewrite_from_outline(
     ip = get_client_ip(http_request)
     tracker.check(ip)
     result = await service.rewrite(request)
+    tracker.increment(ip)
+    response.headers["X-Remaining-Attempts"] = str(tracker.remaining(ip))
+    return result
+
+
+@router.post(
+    "/edit",
+    response_model=EditResponse,
+    summary="Micro-edit chapter via search-replace",
+    description="Chapter text + bullets + instruction; returns edited chapter with highlights.",
+)
+async def edit_chapter(
+    http_request: Request,
+    request: EditRequest,
+    response: Response,
+    service: EditService = Depends(get_edit_service),
+    tracker: UsageTracker = Depends(get_usage_tracker),
+) -> EditResponse:
+    """Apply a targeted edit instruction to the chapter text."""
+    ip = get_client_ip(http_request)
+    tracker.check(ip)
+    try:
+        result = await service.edit(request)
+    except ValueError as e:
+        if "Failed to parse Gemini" in str(e):
+            raise HTTPException(
+                status_code=502,
+                detail="Edit generation failed. Please try again.",
+            ) from e
+        raise
     tracker.increment(ip)
     response.headers["X-Remaining-Attempts"] = str(tracker.remaining(ip))
     return result

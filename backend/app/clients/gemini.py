@@ -9,8 +9,9 @@ import httpx
 
 from app.core.config import Settings
 from app.core.logging import get_logger
+from app.schemas.edit import EditRequest, EditResponse, LLMEditPayload
 from app.schemas.outline import OutlineRequest, OutlineResponse
-from app.schemas.rewrite import RewriteRequest, RewriteResponse
+from app.schemas.rewrite import ChangeHighlight, RewriteRequest, RewriteResponse
 
 logger = get_logger(__name__)
 
@@ -142,6 +143,50 @@ def _parse_rewrite_response(raw: str) -> RewriteResponse:
     return RewriteResponse.model_validate(data)
 
 
+def _build_edit_prompt(request: EditRequest) -> str:
+    """Build the prompt for a micro-edit (search-replace pairs)."""
+    parts = [
+        "You are a fiction editor. The user wants to make a specific edit to their chapter.",
+        "",
+        "RULES:",
+        "- Return ONLY search-replace pairs for text that must change.",
+        '- "search" must be an EXACT substring from the original chapter (copy-paste precision).',
+        '- "search" should be long enough to be unique in the chapter (full sentence preferred).',
+        '- "replace" is the edited version of that exact text.',
+        "- Only include edits necessary to fulfill the instruction.",
+        "- Update the bullets to reflect the edited chapter.",
+        "",
+        "## Chapter (original)",
+        request.chapter.text.strip(),
+        "",
+        "## Current structural beats",
+    ]
+    for i, b in enumerate(request.bullets, 1):
+        parts.append(f"{i}. {b.strip()}")
+    parts.append("")
+    parts.append("## Edit instruction")
+    parts.append(request.instruction.strip())
+    if request.chapter.tone:
+        parts.append("")
+        parts.append(f"Tone guidance: {request.chapter.tone.strip()}")
+    if request.chapter.language:
+        parts.append("")
+        parts.append(f"Target language: {request.chapter.language.strip()}")
+    parts.append("")
+    parts.append(
+        'Return a JSON object with keys: "edits" (array of {search, replace} pairs) '
+        'and "bullets" (array of {content, anchor_text} reflecting the edited chapter). '
+        "anchor_text must be verbatim from the EDITED chapter."
+    )
+    return "\n".join(parts)
+
+
+def _parse_edit_response(raw: str) -> LLMEditPayload:
+    """Parse Gemini response text into LLMEditPayload."""
+    data: Any = json.loads(raw)
+    return LLMEditPayload.model_validate(data)
+
+
 class GeminiFinishReason(StrEnum):
     SAFETY = auto()
     RECITATION = auto()
@@ -238,6 +283,92 @@ class GeminiClient:
             return result
         except (KeyError, IndexError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse Gemini response: {e}") from e
+
+    async def edit_chapter(self, request: EditRequest) -> EditResponse:
+        """Call Gemini to produce search-replace pairs, then apply them to the original text."""
+        if not self._api_key:
+            raise ValueError("gemini_api_key is not set")
+
+        prompt = _build_edit_prompt(request)
+        url = f"{self._base}/models/{self._model}:generateContent"
+
+        MAX_OUTPUT_TOKENS = 2048
+        MAX_EDIT_PARSE_ATTEMPTS = 3
+        generation_config: dict[str, Any] = {"maxOutputTokens": MAX_OUTPUT_TOKENS}
+        if self._structured_output:
+            generation_config["responseMimeType"] = "application/json"
+            generation_config["responseJsonSchema"] = LLMEditPayload.model_json_schema()
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": generation_config,
+        }
+
+        llm_result: LLMEditPayload | None = None
+        for attempt in range(MAX_EDIT_PARSE_ATTEMPTS):
+            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+                resp = await _post_with_retry(
+                    client,
+                    url,
+                    headers={"x-goog-api-key": self._api_key},
+                    payload=payload,
+                    log_label="Gemini edit_chapter",
+                )
+            body = resp.json()
+            raw: str | None = None
+            try:
+                raw = _extract_response_text(body)
+                llm_result = _parse_edit_response(raw)
+                if self._dev_log:
+                    logger.info(
+                        "edit_chapter response (dev): %s",
+                        json.dumps(llm_result.model_dump(), indent=2),
+                    )
+                break
+            except (KeyError, IndexError, json.JSONDecodeError, ValueError) as e:
+                raw_preview: str = (
+                    (raw[:RAW_RESPONSE_LOG_LIMIT] + "... [truncated]")
+                    if raw and len(raw) > RAW_RESPONSE_LOG_LIMIT
+                    else (raw or "(extract failed)")
+                )
+                is_final = attempt == MAX_EDIT_PARSE_ATTEMPTS - 1
+                if is_final:
+                    logger.error(
+                        "Gemini edit_chapter parse failed (final): %s; raw: %s",
+                        e,
+                        raw_preview,
+                    )
+                    raise ValueError(f"Failed to parse Gemini response: {e}") from e
+                logger.warning(
+                    "Gemini edit_chapter parse failed, retrying: %s; raw: %s",
+                    e,
+                    raw_preview,
+                )
+
+        assert llm_result is not None  # loop raises or breaks with result
+
+        # Apply search-replace edits to the original chapter text
+        chapter_text = request.chapter.text
+        highlights: list[ChangeHighlight] = []
+        applied = 0
+        for edit in llm_result.edits:
+            if edit.search in chapter_text:
+                chapter_text = chapter_text.replace(edit.search, edit.replace, 1)
+                highlights.append(ChangeHighlight(original=edit.search, updated=edit.replace))
+                applied += 1
+            else:
+                logger.warning("Edit search text not found in chapter: %.100s", edit.search)
+
+        from app.schemas.rewrite import InternalStructure
+
+        return EditResponse(
+            chapter_text=chapter_text,
+            change_highlights=highlights,
+            internal_structure=InternalStructure(
+                bullets=llm_result.bullets,
+                scene_summaries=[],
+            ),
+            edits_applied=applied,
+        )
 
     async def outline_chapter(self, request: OutlineRequest) -> OutlineResponse:
         """Call Gemini to split the chapter into 3–8 structural bullets."""

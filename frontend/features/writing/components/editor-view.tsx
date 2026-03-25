@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,9 @@ export interface EditorViewProps {
   onRefactor: () => void
   refactorError?: string | null
   remainingAttempts?: number | null
+  isEditing?: boolean
+  onEditInstruction?: (instruction: string) => void
+  editError?: string | null
 }
 
 export function EditorView({
@@ -32,6 +35,9 @@ export function EditorView({
   onRefactor,
   refactorError = null,
   remainingAttempts = null,
+  isEditing = false,
+  onEditInstruction,
+  editError = null,
 }: EditorViewProps) {
   const BEATS_TIP_SEEN_KEY = "writer-ai-beats-tip-seen"
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -51,6 +57,16 @@ export function EditorView({
     const t = setTimeout(() => setHighlightBeatsTrigger(false), 8000)
     return () => clearTimeout(t)
   }, [highlightBeatsTrigger])
+
+  const handleBulletClick = useCallback((index: number) => {
+    const el = workspaceRef.current?.querySelector(`[data-anchor-for-bullet="${index}"]`)
+    el?.scrollIntoView({ block: "center", behavior: "smooth" })
+  }, [])
+
+  const handleAnchorClick = useCallback((index: number) => {
+    const el = workspaceRef.current?.querySelector(`[data-bullet-index="${index}"]`)
+    el?.scrollIntoView({ block: "center", behavior: "smooth" })
+  }, [])
 
   const handleBulletsDialogOpenChange = (open: boolean) => {
     setBulletsDialogOpen(open)
@@ -122,6 +138,7 @@ export function EditorView({
               bullets={warp.bullets}
               activeBulletIndex={warp.hoveredIndex}
               onBulletHover={warp.setHoveredIndex}
+              onAnchorClick={handleAnchorClick}
             />
           )}
         </motion.div>
@@ -141,10 +158,14 @@ export function EditorView({
             onBulletsChange={warp.setBullets}
             activeBulletIndex={warp.hoveredIndex}
             onBulletHover={warp.setHoveredIndex}
+            onBulletClick={handleBulletClick}
             showTethers={warp.showTethers}
             onToggleTethers={() => warp.setShowTethers((v) => !v)}
             chapterText={warp.chapterText}
             onRemainingAttemptsChange={warp.setRemainingAttempts}
+            onEditInstruction={onEditInstruction}
+            isEditing={isEditing}
+            editError={editError}
           />
         </motion.div>
 

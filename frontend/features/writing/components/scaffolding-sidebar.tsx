@@ -16,10 +16,14 @@ interface ScaffoldingSidebarProps {
   onBulletsChange: (bullets: StoryBullet[]) => void
   activeBulletIndex?: number | null
   onBulletHover?: (index: number | null) => void
+  onBulletClick?: (index: number) => void
   showTethers?: boolean
   onToggleTethers?: () => void
   chapterText?: string
   onRemainingAttemptsChange?: (n: number | null) => void
+  onEditInstruction?: (instruction: string) => void
+  isEditing?: boolean
+  editError?: string | null
 }
 
 function BulletCard({
@@ -29,6 +33,7 @@ function BulletCard({
   onDelete,
   highlighted,
   onBulletHover,
+  onBulletClick,
 }: {
   bullet: StoryBullet
   index: number
@@ -36,6 +41,7 @@ function BulletCard({
   onDelete: (id: string) => void
   highlighted?: boolean
   onBulletHover?: (index: number | null) => void
+  onBulletClick?: (index: number) => void
 }) {
   const [isFocused, setIsFocused] = useState(false)
   const color = BEAT_TAG_COLORS[index % BEAT_TAG_COLORS.length]
@@ -83,12 +89,14 @@ function BulletCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <span
-              className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+              onClick={() => onBulletClick?.(index)}
+              className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md cursor-pointer hover:opacity-80 transition-opacity"
               style={{
                 background: color.bg,
                 color: color.text,
                 border: `1px solid ${color.border}`,
               }}
+              title="Scroll to anchor"
             >
               {String(index + 1).padStart(2, "0")}
             </span>
@@ -125,23 +133,44 @@ function BulletCard({
 }
 
 function BeatAgentBox({
+  bullets,
   chapterText,
   onBulletsChange,
   onRemainingAttemptsChange,
+  onEditInstruction,
+  isEditing = false,
+  editError = null,
 }: {
+  bullets: StoryBullet[]
   chapterText?: string
   onBulletsChange: (bullets: StoryBullet[]) => void
   onRemainingAttemptsChange?: (n: number | null) => void
+  onEditInstruction?: (instruction: string) => void
+  isEditing?: boolean
+  editError?: string | null
 }) {
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const canSubmit = prompt.trim().length > 0 && !!chapterText?.trim() && !isGenerating
+  // When beats already exist, use the micro-edit endpoint; otherwise generate beats from scratch
+  const hasBeats = bullets.length > 0
+  const isBusy = hasBeats ? isEditing : isGenerating
+  const canSubmit = prompt.trim().length > 0 && !!chapterText?.trim() && !isBusy
 
   const handleSubmit = async () => {
     if (!canSubmit) return
+    if (error) setError(null)
+
+    if (hasBeats && onEditInstruction) {
+      // Micro-edit: delegate to parent hook (handles state + API call)
+      onEditInstruction(prompt.trim())
+      setPrompt("")
+      return
+    }
+
+    // No beats yet: generate beats from scratch via outline API
     setIsGenerating(true)
     setError(null)
     try {
@@ -192,24 +221,26 @@ function BeatAgentBox({
             if (error) setError(null)
           }}
           onKeyDown={handleKeyDown}
-          disabled={isGenerating}
+          disabled={isBusy}
           rows={3}
           placeholder={
-            chapterText?.trim()
-              ? "Describe the beats you want to generate…"
-              : "Paste a chapter first to generate beats"
+            !chapterText?.trim()
+              ? "Paste a chapter first to generate beats"
+              : hasBeats
+              ? "Describe a change to apply…"
+              : "Describe the beats you want to generate…"
           }
           className="w-full bg-transparent text-[12px] text-foreground/80 placeholder:text-muted-foreground/55 leading-relaxed resize-none focus:outline-none px-3 pt-3 pb-9 disabled:opacity-50"
         />
         <div className="absolute bottom-2 right-2 flex items-center gap-2">
-          <span className="text-[9px] text-muted-foreground/50 select-none">↵ generate</span>
+          <span className="text-[9px] text-muted-foreground/50 select-none">↵ {hasBeats ? "edit" : "generate"}</span>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
             className="flex items-center justify-center size-6 rounded-md bg-primary/80 hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-primary-foreground"
-            aria-label="Generate beats"
+            aria-label={hasBeats ? "Apply edit" : "Generate beats"}
           >
-            {isGenerating ? (
+            {isBusy ? (
               <Loader2 className="size-3 animate-spin" />
             ) : (
               <ArrowUp className="size-3" />
@@ -217,9 +248,9 @@ function BeatAgentBox({
           </button>
         </div>
       </div>
-      {error && (
+      {(error || (hasBeats && editError)) && (
         <p role="alert" className="text-[10px] text-destructive px-1">
-          {error}
+          {error || editError}
         </p>
       )}
     </div>
@@ -231,10 +262,14 @@ export function ScaffoldingSidebar({
   onBulletsChange,
   activeBulletIndex,
   onBulletHover,
+  onBulletClick,
   showTethers = true,
   onToggleTethers,
   chapterText,
   onRemainingAttemptsChange,
+  onEditInstruction,
+  isEditing = false,
+  editError = null,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -291,14 +326,16 @@ export function ScaffoldingSidebar({
                 onDelete={deleteBullet}
                 highlighted={activeBulletIndex === index}
                 onBulletHover={onBulletHover}
+                onBulletClick={onBulletClick}
               />
             ))}
           </AnimatePresence>
         </Reorder.Group>
       </ScrollArea>
 
-      <div className="flex-shrink-0 px-3 py-3 pt-0 space-y-2 border-t border-border/60">
+      <div className="flex-shrink-0 px-3 py-3 pt-3 space-y-2 border-t border-border/60">
         <BeatAgentBox
+          bullets={bullets}
           chapterText={chapterText}
           onBulletsChange={(newBullets) => {
             onBulletsChange(newBullets)
@@ -307,6 +344,9 @@ export function ScaffoldingSidebar({
             }, 100)
           }}
           onRemainingAttemptsChange={onRemainingAttemptsChange}
+          onEditInstruction={onEditInstruction}
+          isEditing={isEditing}
+          editError={editError}
         />
         {onToggleTethers && (
           <Button

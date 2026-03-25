@@ -18,6 +18,7 @@ interface ChapterEditorProps {
   bullets: StoryBullet[]
   activeBulletIndex: number | null
   onBulletHover: (index: number | null) => void
+  onAnchorClick?: (bulletIndex: number) => void
 }
 
 export function ChapterEditor({
@@ -28,6 +29,7 @@ export function ChapterEditor({
   bullets,
   activeBulletIndex,
   onBulletHover,
+  onAnchorClick,
 }: ChapterEditorProps) {
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -166,7 +168,8 @@ export function ChapterEditor({
                     data-anchor-for-bullet={seg.bulletIndex}
                     onMouseEnter={() => onBulletHover(seg.bulletIndex)}
                     onMouseLeave={() => onBulletHover(null)}
-                    className="rounded-sm transition-colors duration-200"
+                    onClick={() => onAnchorClick?.(seg.bulletIndex)}
+                    className="rounded-sm transition-colors duration-200 cursor-pointer"
                     style={{
                       color:
                         activeBulletIndex === seg.bulletIndex

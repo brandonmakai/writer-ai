@@ -51,7 +51,7 @@ Co-authored-by: Cursor <cursoragent@cursor.com>
 
 ## Testing & Pre-Commit Enforcement
 
-Pre-commit runs from the **repo root** using [.pre-commit-config.yaml](../.pre-commit-config.yaml). Install hooks with `pre-commit install` (from root).
+Pre-commit runs from the **repo root** using [backend/.pre-commit-config.yaml](../backend/.pre-commit-config.yaml). Install hooks with `pre-commit install --config backend/.pre-commit-config.yaml` (from root).
 
 **Backend** (when `backend/` files change): ruff, ruff-format, mypy, pytest.
 

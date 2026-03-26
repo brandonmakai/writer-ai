@@ -1,23 +1,52 @@
+# Installed with: pre-commit install --config backend/.pre-commit-config.yaml
+# (from repository root). Hooks still run against the whole repo.
+#
+# See docs/ENGINEERING_GUIDELINES.md
+default_install_hook_types: [pre-commit]
+
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-added-large-files
+        args: [--maxkb=800]
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.9.10
     hooks:
       - id: ruff
-        files: ^backend/.*$
+        args: [--fix]
+        files: ^backend/.*\.py$
       - id: ruff-format
-        files: ^backend/.*$
+        files: ^backend/.*\.py$
 
-  # TODO: Refactor to only run in /backend directory
   - repo: local
     hooks:
-      - id: mypy
-        name: mypy
-        entry: uv --project backend run mypy backend
+      - id: frontend-eslint
+        name: frontend eslint
         language: system
+        entry: bash -c 'cd frontend && npm run lint'
         pass_filenames: false
+        files: ^frontend/
+        exclude: ^frontend/node_modules/|^frontend/\.next/
 
-      - id: pytest
-        name: pytest
-        entry: uv --project backend run pytest backend
+      - id: frontend-typecheck
+        name: frontend type-check
         language: system
+        entry: bash -c 'cd frontend && npm run type-check'
         pass_filenames: false
+        files: ^frontend/.*\.(ts|tsx)$
+        exclude: ^frontend/node_modules/|^frontend/\.next/
+
+      - id: frontend-test
+        name: frontend vitest
+        language: system
+        entry: bash -c 'cd frontend && npm run test'
+        pass_filenames: false
+        files: ^frontend/
+        exclude: ^frontend/node_modules/|^frontend/\.next/

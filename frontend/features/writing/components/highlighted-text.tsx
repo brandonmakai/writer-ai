@@ -83,7 +83,7 @@ function DiffPopup({
           className="size-2.5 rotate-45 border-t border-l"
           style={{
             background: "oklch(0.16 0.01 270)",
-            borderColor: "oklch(0.72 0.12 75 / 0.3)",
+            borderColor: "oklch(0.72 0.17 162 / 0.3)",
           }}
         />
       </div>
@@ -92,19 +92,19 @@ function DiffPopup({
         style={{
           background:
             "linear-gradient(135deg, oklch(0.16 0.01 270 / 0.97), oklch(0.13 0.008 270 / 0.97))",
-          borderColor: "oklch(0.72 0.12 75 / 0.2)",
+          borderColor: "oklch(0.72 0.17 162 / 0.2)",
           boxShadow:
-            "0 20px 60px rgba(0,0,0,0.5), 0 0 20px oklch(0.72 0.12 75 / 0.06)",
+            "0 20px 60px rgba(0,0,0,0.5), 0 0 20px oklch(0.72 0.17 162 / 0.06)",
         }}
       >
         <div className="flex items-center gap-2 mb-3">
           <div
             className="size-1.5 rounded-full"
-            style={{ background: "oklch(0.78 0.14 75)" }}
+            style={{ background: "oklch(0.72 0.17 162)" }}
           />
           <span
             className="text-[10px] font-bold uppercase tracking-widest"
-            style={{ color: "oklch(0.78 0.14 75)" }}
+            style={{ color: "oklch(0.72 0.17 162)" }}
           >
             AI Change
           </span>
@@ -124,7 +124,7 @@ function DiffPopup({
           <div className="flex-1 h-px bg-border/40" />
           <ArrowRight
             className="size-3 shrink-0"
-            style={{ color: "oklch(0.78 0.14 75)" }}
+            style={{ color: "oklch(0.72 0.17 162)" }}
           />
           <div className="flex-1 h-px bg-border/40" />
         </div>
@@ -134,7 +134,7 @@ function DiffPopup({
           </span>
           <p
             className="text-[12px] leading-relaxed font-serif font-medium"
-            style={{ color: "oklch(0.88 0.08 75)" }}
+            style={{ color: "oklch(0.88 0.1 162)" }}
           >
             {highlight.updated}
           </p>
@@ -166,9 +166,12 @@ function HighlightedSpan({
       ref={ref}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onLeave}
-      className="relative cursor-help transition-colors duration-200 underline decoration-wavy underline-offset-4 decoration-[1.5px] hover:decoration-[oklch(0.78_0.14_75)] hover:bg-[oklch(0.78_0.14_75/0.08)] rounded-sm"
+      className="relative cursor-help rounded-sm transition-colors duration-200"
       style={{
-        textDecorationColor: "oklch(0.78 0.14 75 / 0.6)",
+        background: "oklch(0.65 0.17 162 / 0.22)",
+        color: "oklch(0.88 0.1 162)",
+        padding: "1px 3px",
+        margin: "0 -1px",
       }}
     >
       {highlight.updated}
@@ -227,12 +230,6 @@ export function HighlightedText({
     setActiveHighlight(null)
   }, [])
 
-  const highlightForText = useCallback(
-    (segmentText: string) =>
-      highlights.find((h) => h.updated === segmentText) ?? null,
-    [highlights]
-  )
-
   return (
     <div ref={containerRef} className="relative">
       <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-4 py-2 sm:px-3 sm:-mx-3 transition-all duration-300 whitespace-pre-wrap">
@@ -259,36 +256,33 @@ export function HighlightedText({
                     : "transparent",
               }}
             >
-              {(() => {
-                const h = highlightForText(seg.text)
-                return h ? (
+              {splitTextByHighlights(seg.text, highlights).map((part, si) =>
+                part.highlight ? (
                   <HighlightedSpan
-                    highlight={h}
-                    onHover={(rect) => handleHover(h, rect)}
+                    key={`${i}-${si}`}
+                    highlight={part.highlight}
+                    onHover={(rect) => handleHover(part.highlight!, rect)}
                     onLeave={handleLeave}
                   />
                 ) : (
-                  seg.text
+                  <span key={`${i}-${si}`}>{part.text}</span>
                 )
-              })()}
+              )}
             </span>
           ) : (
             <span key={`t-${i}`}>
-              {(() => {
-                const parts = splitTextByHighlights(seg.text, highlights)
-                return parts.map((part, si) =>
-                  part.highlight ? (
-                    <HighlightedSpan
-                      key={`${i}-${si}`}
-                      highlight={part.highlight}
-                      onHover={(rect) => handleHover(part.highlight!, rect)}
-                      onLeave={handleLeave}
-                    />
-                  ) : (
-                    <span key={`${i}-${si}`}>{part.text}</span>
-                  )
+              {splitTextByHighlights(seg.text, highlights).map((part, si) =>
+                part.highlight ? (
+                  <HighlightedSpan
+                    key={`${i}-${si}`}
+                    highlight={part.highlight}
+                    onHover={(rect) => handleHover(part.highlight!, rect)}
+                    onLeave={handleLeave}
+                  />
+                ) : (
+                  <span key={`${i}-${si}`}>{part.text}</span>
                 )
-              })()}
+              )}
             </span>
           )
         )}

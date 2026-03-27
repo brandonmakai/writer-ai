@@ -92,9 +92,9 @@ export function ChapterEditor({
               animate={{ opacity: 1, scale: 1 }}
               className="ml-2 inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
               style={{
-                background: "oklch(0.78 0.14 75 / 0.1)",
-                color: "oklch(0.78 0.14 75)",
-                border: "1px solid oklch(0.78 0.14 75 / 0.2)",
+                background: "oklch(0.65 0.17 162 / 0.12)",
+                color: "oklch(0.72 0.17 162)",
+                border: "1px solid oklch(0.72 0.17 162 / 0.2)",
               }}
             >
               {highlights.length} changes

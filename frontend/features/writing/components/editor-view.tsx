@@ -21,7 +21,7 @@ import { TetherOverlay } from "./tether-overlay"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import type { WarpState } from "./editor-view-types"
-import { HARD_WORD_LIMIT, SOFT_WORD_LIMIT } from "@/features/writing/types"
+import { HARD_WORD_LIMIT } from "@/features/writing/types"
 
 export interface EditorViewProps {
   warp: WarpState
@@ -363,10 +363,6 @@ export function EditorView({
               </Tooltip>
             </TooltipProvider>
             <div className="mt-2 space-y-1 flex flex-col items-center text-center max-w-[min(100%,18rem)] sm:max-w-sm">
-              <p className="text-xs text-muted-foreground">
-                {warp.wordCount} word{warp.wordCount !== 1 ? "s" : ""} · best results under{" "}
-                {SOFT_WORD_LIMIT.toLocaleString()} words
-              </p>
               {warp.bullets.length > 0 && !overHardLimit && (
                 <p className="text-xs text-muted-foreground/60 leading-relaxed">
                   Prompts update beats only. Rewrite replaces the full chapter text to match them.

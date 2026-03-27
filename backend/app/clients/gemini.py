@@ -377,7 +377,7 @@ class GeminiClient:
         prompt = _build_outline_prompt(request)
         url = f"{self._base}/models/{self._model}:generateContent"
 
-        MAX_OUTPUT_TOKENS = 1024
+        MAX_OUTPUT_TOKENS = 4096
         generation_config: dict[str, Any] = {"maxOutputTokens": MAX_OUTPUT_TOKENS}
         if self._structured_output:
             generation_config["responseMimeType"] = "application/json"

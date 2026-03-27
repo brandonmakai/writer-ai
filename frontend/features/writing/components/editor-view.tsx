@@ -49,6 +49,7 @@ export function EditorView({
   const [beatsEdited, setBeatsEdited] = useState(false)
   const [beatPulseSignal, setBeatPulseSignal] = useState(0)
   const prevIsRefactoringRef = useRef(false)
+  const tooltipPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
 
   // Reset beatsEdited after a successful refactor so the user must edit again
@@ -278,7 +279,21 @@ export function EditorView({
 
           <div className="relative flex flex-col items-center">
             <TooltipProvider>
-              <Tooltip onOpenChange={(open) => { if (open) setBeatPulseSignal((n) => n + 1) }}>
+              <Tooltip
+                onOpenChange={(open) => {
+                  if (open) {
+                    tooltipPulseTimeoutRef.current = setTimeout(
+                      () => setBeatPulseSignal((n) => n + 1),
+                      600
+                    )
+                  } else {
+                    if (tooltipPulseTimeoutRef.current) {
+                      clearTimeout(tooltipPulseTimeoutRef.current)
+                      tooltipPulseTimeoutRef.current = null
+                    }
+                  }
+                }}
+              >
                 <TooltipTrigger asChild>
                   <span className="inline-flex">
                     <Button

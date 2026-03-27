@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect, useCallback } from "react"
+import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -61,6 +62,32 @@ export function EditorView({
   }, [isRefactoring, refactorError])
 
   const handleBeatsEdited = useCallback(() => setBeatsEdited(true), [])
+
+  // On first mount: show onboarding toast, then pulse the first beat after the
+  // toast clears. Sequential order keeps attention focused — users read the toast,
+  // it exits, then the pulse draws their eye to where to act.
+  // The cleanup-on-re-run from React Strict Mode cancels Effect 1's timers; Effect 2
+  // reschedules them and they fire exactly once — no ref guard needed.
+  useEffect(() => {
+    const beatCount = warp.bullets.length
+    if (!beatCount) return
+
+    const toastT = setTimeout(() => {
+      toast(`Structure Mapped! ${beatCount} story beat${beatCount !== 1 ? "s" : ""} identified`, {
+        description: "Edit a beat or write a prompt to refine the chapter.",
+        position: "top-center",
+      })
+    }, 800)
+
+    // 800ms show delay + 4000ms sonner default duration + ~400ms exit animation
+    const pulseT = setTimeout(() => setBeatPulseSignal((n) => n + 1), 5200)
+
+    return () => {
+      clearTimeout(toastT)
+      clearTimeout(pulseT)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (!isMobile || typeof sessionStorage === "undefined" || sessionStorage.getItem(BEATS_TIP_SEEN_KEY)) return

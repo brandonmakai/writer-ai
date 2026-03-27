@@ -284,34 +284,16 @@ export function ScaffoldingSidebar({
   pulseSignal = 0,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const hasPulsedRef = useRef(false)
   const [pulsingFirstBeat, setPulsingFirstBeat] = useState(false)
 
-  // Re-trigger pulse when the parent signals it (e.g. tooltip hover on Refine button)
+  // Pulse the first beat when the parent signals it — initial onboarding and tooltip hover.
+  // EditorView owns all pulse timing so the sequence (toast → pulse) stays coordinated.
   useEffect(() => {
     if (!pulseSignal) return
     const t1 = setTimeout(() => setPulsingFirstBeat(true), 0)
     const t2 = setTimeout(() => setPulsingFirstBeat(false), 3200)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [pulseSignal])
-
-  // Pulse the first beat once when beats first appear.
-  // Note: hasPulsedRef is set inside the timeout callback (not the effect body) so that
-  // React Strict Mode's synchronous cleanup + re-run cycle doesn't cancel the timer while
-  // the guard flag is already true, leaving the pulse permanently skipped.
-  useEffect(() => {
-    if (bullets.length > 0 && !hasPulsedRef.current) {
-      const startT = setTimeout(() => {
-        hasPulsedRef.current = true
-        setPulsingFirstBeat(true)
-      }, 0)
-      const endT = setTimeout(() => setPulsingFirstBeat(false), 3200)
-      return () => {
-        clearTimeout(startT)
-        clearTimeout(endT)
-      }
-    }
-  }, [bullets.length])
 
   const updateBullet = (
     id: string,

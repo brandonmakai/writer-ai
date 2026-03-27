@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Merriweather } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const _inter = Inter({
@@ -51,6 +52,7 @@ export default function RootLayout({
     <html lang="en" className={`${_inter.variable} ${_merriweather.variable}`}>
       <body className="font-sans antialiased">
         {children}
+        <Toaster position="bottom-right" />
         <Analytics />
       </body>
     </html>

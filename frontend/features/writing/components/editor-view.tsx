@@ -365,7 +365,7 @@ export function EditorView({
             <div className="mt-2 space-y-1 flex flex-col items-center text-center max-w-[min(100%,18rem)] sm:max-w-sm">
               {warp.bullets.length > 0 && !overHardLimit && (
                 <p className="text-xs text-muted-foreground/60 leading-relaxed">
-                  Prompts update beats only. Rewrite replaces the full chapter text to match them.
+                  Prompts perform micro-edits and update beats only. Rewrite replaces the full chapter text to match them.
                 </p>
               )}
               {overHardLimit && (

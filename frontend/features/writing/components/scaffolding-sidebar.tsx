@@ -31,7 +31,6 @@ interface ScaffoldingSidebarProps {
 function BulletCard({
   bullet,
   index,
-  onUpdate,
   onDelete,
   highlighted,
   onBulletHover,
@@ -40,14 +39,12 @@ function BulletCard({
 }: {
   bullet: StoryBullet
   index: number
-  onUpdate: (id: string, field: "label" | "content", value: string) => void
   onDelete: (id: string) => void
   highlighted?: boolean
   onBulletHover?: (index: number | null) => void
   onBulletClick?: (index: number) => void
   pulsing?: boolean
 }) {
-  const [isFocused, setIsFocused] = useState(false)
   const color = BEAT_TAG_COLORS[index % BEAT_TAG_COLORS.length]
 
   return (
@@ -74,15 +71,9 @@ function BulletCard({
         boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,140,255,0.2)",
         zIndex: 50,
       }}
-      className={`group relative rounded-xl border backdrop-blur-md transition-colors duration-200 cursor-default ${
-        isFocused
-          ? "border-primary/30 shadow-[0_0_20px_oklch(0.65_0.18_250_/_0.1)]"
-          : "border-border/40 hover:border-border/70"
-      }`}
+      className="group relative rounded-xl border border-border/40 hover:border-border/70 backdrop-blur-md transition-colors duration-200 cursor-default"
       style={{
-        background: isFocused
-          ? "linear-gradient(135deg, rgba(100,140,255,0.06), rgba(30,30,50,0.6))"
-          : "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
+        background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
       }}
     >
       {pulsing && (
@@ -107,24 +98,13 @@ function BulletCard({
             >
               {String(index + 1).padStart(2, "0")}
             </span>
-            <input
-              value={bullet.label}
-              onChange={(e) => onUpdate(bullet.id, "label", e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              className="flex-1 bg-transparent text-xs font-medium text-foreground/80 focus:text-foreground focus:outline-none placeholder:text-muted-foreground/40 truncate"
-              placeholder="Beat label..."
-            />
+            <span className="flex-1 text-xs font-medium text-foreground/80 truncate">
+              {bullet.label}
+            </span>
           </div>
-          <textarea
-            value={bullet.content}
-            onChange={(e) => onUpdate(bullet.id, "content", e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            rows={2}
-            className="w-full bg-transparent text-[11px] text-muted-foreground leading-relaxed resize-none focus:outline-none focus:text-foreground/70 placeholder:text-muted-foreground/30"
-            placeholder="Describe what happens in this beat..."
-          />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {bullet.content}
+          </p>
         </div>
 
         <button
@@ -295,17 +275,6 @@ export function ScaffoldingSidebar({
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [pulseSignal])
 
-  const updateBullet = (
-    id: string,
-    field: "label" | "content",
-    value: string
-  ) => {
-    onBulletsChange(
-      bullets.map((b) => (b.id === id ? { ...b, [field]: value } : b))
-    )
-    onBeatsEdited?.()
-  }
-
   const deleteBullet = (id: string) => {
     onBulletsChange(bullets.filter((b) => b.id !== id))
     onBeatsEdited?.()
@@ -349,7 +318,6 @@ export function ScaffoldingSidebar({
                 key={bullet.id}
                 bullet={bullet}
                 index={index}
-                onUpdate={updateBullet}
                 onDelete={deleteBullet}
                 highlighted={activeBulletIndex === index}
                 onBulletHover={onBulletHover}

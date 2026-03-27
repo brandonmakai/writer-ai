@@ -126,8 +126,14 @@ export function useRefactor({
         setRemainingAttempts?.(n ?? null)
       } catch (err) {
         console.error("Edit API error:", err)
+        const isNetworkError =
+          err instanceof TypeError && err.message === "Failed to fetch"
         setEditError(
-          err instanceof Error ? err.message : "Edit failed. Please try again."
+          isNetworkError
+            ? "Couldn't reach the server. Check your connection and try again."
+            : err instanceof Error
+              ? err.message
+              : "Edit failed. Please try again."
         )
       } finally {
         setIsEditing(false)

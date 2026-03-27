@@ -53,7 +53,12 @@ def get_edit_service(
 
 @lru_cache(maxsize=1)
 def _usage_tracker() -> UsageTracker:
-    return UsageTracker()
+    s = get_settings()
+    return UsageTracker(
+        db_path=s.usage_db_path,
+        max_attempts=s.max_attempts_per_ip,
+        enabled=s.limit_usage_per_ip,
+    )
 
 
 def get_usage_tracker() -> UsageTracker:

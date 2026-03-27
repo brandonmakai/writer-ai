@@ -76,3 +76,23 @@ def test_usage_tracker_different_ips_independent() -> None:
     tracker.increment("1.1.1.1")
     assert tracker.get_count("1.1.1.1") == 2
     assert tracker.get_count("2.2.2.2") == 1
+
+
+def test_usage_tracker_disabled_never_raises() -> None:
+    """When enabled=False, check() never raises regardless of count."""
+    tracker = UsageTracker(":memory:", enabled=False)
+    for _ in range(10):
+        tracker.check("1.2.3.4")
+
+
+def test_usage_tracker_custom_max_attempts() -> None:
+    """UsageTracker respects a custom max_attempts cap."""
+    import pytest
+    from fastapi import HTTPException
+
+    tracker = UsageTracker(":memory:", max_attempts=2)
+    tracker.increment("5.5.5.5")
+    tracker.increment("5.5.5.5")
+    with pytest.raises(HTTPException) as exc_info:
+        tracker.check("5.5.5.5")
+    assert exc_info.value.status_code == 429

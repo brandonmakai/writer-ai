@@ -1,6 +1,6 @@
 # Backend Architecture
 
-FastAPI backend for the **Rewrite from Outline** MVP. This doc describes layout, data flow, and where to change behavior.
+FastAPI backend for the **Refine from Structure** MVP. This doc describes layout, data flow, and where to change behavior.
 
 ## Layout
 
@@ -23,13 +23,14 @@ backend/
 
 ## Chapter endpoints
 
-- **Outline:** `POST /api/v1/chapter/outline` — chapter text (+ optional tone, language) → 3–8 structural bullets. Request → route → OutlineService → GeminiClient.outline_chapter → OutlineResponse.
-- **Rewrite:** `POST /api/v1/chapter/rewrite` — chapter text + bullets (+ optional tone, language) → refactored chapter and highlights.
+- **Outline:** `POST /api/v1/chapter/outline` — chapter text (+ optional tone, language) → 3–8 structural beats (read-only in UI). Request → route → OutlineService → GeminiClient.outline_chapter → OutlineResponse.
+- **Rewrite:** `POST /api/v1/chapter/rewrite` — chapter text + beats (as updated by user prompt via micro-edit) → refined chapter and highlights.
 
-## Rewrite-from-Outline Flow
+## Refine-from-Structure Flow
 
 1. `POST /api/v1/chapter/rewrite` → `app.api.routes.chapter.rewrite_from_outline`
 2. Request body is validated as `RewriteRequest` (chapter: { text, optional tone/language }, bullets).
+   - `bullets` reflects the current beat state: either the original outline or beats updated by a user prompt via the micro-edit endpoint.
 3. Route calls `RewriteService.rewrite(request)` (injected via FastAPI Depends).
 4. **RewriteService** calls `GeminiClient.rewrite_chapter(request)`.
 5. **GeminiClient** builds the prompt (`_build_rewrite_prompt`), calls Gemini `generateContent`, parses JSON into `RewriteResponse`.

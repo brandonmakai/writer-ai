@@ -1,6 +1,6 @@
 # Writer AI Backend
 
-FastAPI backend for the **Rewrite from Outline** MVP. Managed with [uv](https://docs.astral.sh/uv/).
+FastAPI backend for the **Refine from Structure** MVP. Managed with [uv](https://docs.astral.sh/uv/).
 
 ## Quick start
 
@@ -20,8 +20,8 @@ Optional `.env` in this directory: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `ge
 | Method | Path                          | Description                                                                 |
 |--------|-------------------------------|-----------------------------------------------------------------------------|
 | GET    | `/health`                     | Healthcheck; returns `{"status": "ok"}`.                                   |
-| POST   | `/api/v1/chapter/outline`     | Chapter text (+ optional tone, language); returns 3–8 structural bullets.  |
-| POST   | `/api/v1/chapter/rewrite`     | Refactor chapter from outline; body: `chapter` (e.g. `{ text, tone?, language? }`), `bullets` (3–8); returns refactored chapter, internal structure, change highlights. |
+| POST   | `/api/v1/chapter/outline`     | Chapter text (+ optional tone, language); returns 3–8 read-only structural beats. |
+| POST   | `/api/v1/chapter/rewrite`     | Refine chapter from beat structure; body: `chapter` (`{ text, tone?, language? }`), `bullets` (3–8 beats, as updated by prompt); returns refined chapter, internal structure, change highlights. |
 
 ## Commands
 

@@ -63,11 +63,11 @@ function BulletCard({
         scale: highlighted ? 1.05 : 1,
         boxShadow: pulsing
           ? [
-              "0 0 0px oklch(0.65 0.18 250 / 0)",
-              "0 0 18px oklch(0.65 0.18 250 / 0.55)",
-              "0 0 0px oklch(0.65 0.18 250 / 0)",
+              "0 0 0px rgba(100, 140, 255, 0)",
+              "0 0 18px rgba(100, 140, 255, 0.55)",
+              "0 0 0px rgba(100, 140, 255, 0)",
             ]
-          : "0 0 0px oklch(0.65 0.18 250 / 0)",
+          : "0 0 0px rgba(100, 140, 255, 0)",
       }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{

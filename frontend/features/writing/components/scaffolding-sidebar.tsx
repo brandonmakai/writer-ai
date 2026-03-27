@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, KeyboardEvent } from "react"
+import { useState, useRef, useEffect, KeyboardEvent } from "react"
 import { motion, AnimatePresence, Reorder } from "framer-motion"
 import { GripVertical, X, Link2, Link2Off, ArrowUp, Loader2 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -24,6 +24,7 @@ interface ScaffoldingSidebarProps {
   onEditInstruction?: (instruction: string) => void
   isEditing?: boolean
   editError?: string | null
+  onBeatsEdited?: () => void
 }
 
 function BulletCard({
@@ -34,6 +35,7 @@ function BulletCard({
   highlighted,
   onBulletHover,
   onBulletClick,
+  pulsing = false,
 }: {
   bullet: StoryBullet
   index: number
@@ -42,6 +44,7 @@ function BulletCard({
   highlighted?: boolean
   onBulletHover?: (index: number | null) => void
   onBulletClick?: (index: number) => void
+  pulsing?: boolean
 }) {
   const [isFocused, setIsFocused] = useState(false)
   const color = BEAT_TAG_COLORS[index % BEAT_TAG_COLORS.length]
@@ -58,12 +61,20 @@ function BulletCard({
         opacity: 1,
         y: 0,
         scale: highlighted ? 1.05 : 1,
+        boxShadow: pulsing
+          ? [
+              "0 0 0px oklch(0.65 0.18 250 / 0)",
+              "0 0 18px oklch(0.65 0.18 250 / 0.55)",
+              "0 0 0px oklch(0.65 0.18 250 / 0)",
+            ]
+          : "0 0 0px oklch(0.65 0.18 250 / 0)",
       }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{
         opacity: { duration: 0.3, delay: index * 0.04 },
         y: { duration: 0.3, delay: index * 0.04 },
         scale: { duration: 0.2, ease: "easeOut" },
+        boxShadow: { duration: 1.5, repeat: 1 },
       }}
       whileDrag={{
         scale: 1.03,
@@ -140,6 +151,7 @@ function BeatAgentBox({
   onEditInstruction,
   isEditing = false,
   editError = null,
+  onBeatsEdited,
 }: {
   bullets: StoryBullet[]
   chapterText?: string
@@ -148,6 +160,7 @@ function BeatAgentBox({
   onEditInstruction?: (instruction: string) => void
   isEditing?: boolean
   editError?: string | null
+  onBeatsEdited?: () => void
 }) {
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
@@ -166,6 +179,7 @@ function BeatAgentBox({
     if (hasBeats && onEditInstruction) {
       // Micro-edit: delegate to parent hook (handles state + API call)
       onEditInstruction(prompt.trim())
+      onBeatsEdited?.()
       setPrompt("")
       return
     }
@@ -270,8 +284,24 @@ export function ScaffoldingSidebar({
   onEditInstruction,
   isEditing = false,
   editError = null,
+  onBeatsEdited,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const hasPulsedRef = useRef(false)
+  const [pulsingFirstBeat, setPulsingFirstBeat] = useState(false)
+
+  // Pulse the first beat once when beats first appear
+  useEffect(() => {
+    if (bullets.length > 0 && !hasPulsedRef.current) {
+      hasPulsedRef.current = true
+      const startT = setTimeout(() => setPulsingFirstBeat(true), 0)
+      const endT = setTimeout(() => setPulsingFirstBeat(false), 3200)
+      return () => {
+        clearTimeout(startT)
+        clearTimeout(endT)
+      }
+    }
+  }, [bullets.length])
 
   const updateBullet = (
     id: string,
@@ -281,10 +311,12 @@ export function ScaffoldingSidebar({
     onBulletsChange(
       bullets.map((b) => (b.id === id ? { ...b, [field]: value } : b))
     )
+    onBeatsEdited?.()
   }
 
   const deleteBullet = (id: string) => {
     onBulletsChange(bullets.filter((b) => b.id !== id))
+    onBeatsEdited?.()
   }
 
   return (
@@ -313,7 +345,10 @@ export function ScaffoldingSidebar({
         <Reorder.Group
           axis="y"
           values={bullets}
-          onReorder={onBulletsChange}
+          onReorder={(newBullets) => {
+            onBulletsChange(newBullets)
+            onBeatsEdited?.()
+          }}
           className="flex flex-col gap-2.5 p-3"
         >
           <AnimatePresence initial={false}>
@@ -327,6 +362,7 @@ export function ScaffoldingSidebar({
                 highlighted={activeBulletIndex === index}
                 onBulletHover={onBulletHover}
                 onBulletClick={onBulletClick}
+                pulsing={index === 0 && pulsingFirstBeat}
               />
             ))}
           </AnimatePresence>
@@ -347,6 +383,7 @@ export function ScaffoldingSidebar({
           onEditInstruction={onEditInstruction}
           isEditing={isEditing}
           editError={editError}
+          onBeatsEdited={onBeatsEdited}
         />
         {onToggleTethers && (
           <Button

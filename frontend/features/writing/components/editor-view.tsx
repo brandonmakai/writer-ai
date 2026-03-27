@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { EditorHeader } from "@/components/layout/editor-header"
 import { ChapterEditor } from "./chapter-editor"
 import { ScaffoldingSidebar } from "./scaffolding-sidebar"
@@ -44,7 +45,21 @@ export function EditorView({
   const isMobile = useIsMobile()
   const [bulletsDialogOpen, setBulletsDialogOpen] = useState(false)
   const [highlightBeatsTrigger, setHighlightBeatsTrigger] = useState(false)
+  const [beatsEdited, setBeatsEdited] = useState(false)
+  const prevIsRefactoringRef = useRef(false)
   const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
+
+  // Reset beatsEdited after a successful refactor so the user must edit again
+  useEffect(() => {
+    if (prevIsRefactoringRef.current && !isRefactoring && !refactorError) {
+      const t = setTimeout(() => setBeatsEdited(false), 0)
+      prevIsRefactoringRef.current = isRefactoring
+      return () => clearTimeout(t)
+    }
+    prevIsRefactoringRef.current = isRefactoring
+  }, [isRefactoring, refactorError])
+
+  const handleBeatsEdited = useCallback(() => setBeatsEdited(true), [])
 
   useEffect(() => {
     if (!isMobile || typeof sessionStorage === "undefined" || sessionStorage.getItem(BEATS_TIP_SEEN_KEY)) return
@@ -166,6 +181,7 @@ export function EditorView({
             onEditInstruction={onEditInstruction}
             isEditing={isEditing}
             editError={editError}
+            onBeatsEdited={handleBeatsEdited}
           />
         </motion.div>
 
@@ -195,6 +211,7 @@ export function EditorView({
                 onToggleTethers={() => warp.setShowTethers((v) => !v)}
                 chapterText={warp.chapterText}
                 onRemainingAttemptsChange={warp.setRemainingAttempts}
+                onBeatsEdited={handleBeatsEdited}
               />
             </div>
           </DialogContent>
@@ -230,24 +247,42 @@ export function EditorView({
           )}
 
           <div className="relative flex flex-col items-center">
-            <Button
-              size="lg"
-              onClick={onRefactor}
-              disabled={isRefactoring || warp.bullets.length === 0 || overHardLimit}
-              className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250/0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250/0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
-            >
-              {isRefactoring ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>{refactorStepLabel || "Weaving…"}</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="size-4" />
-                  Refactor Chapter
-                </>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex">
+                    <Button
+                      size="lg"
+                      onClick={onRefactor}
+                      disabled={
+                        isRefactoring ||
+                        warp.bullets.length === 0 ||
+                        overHardLimit ||
+                        (!beatsEdited && warp.bullets.length > 0)
+                      }
+                      className="relative bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-6 py-3 sm:px-8 text-sm font-medium shadow-[0_0_30px_oklch(0.65_0.18_250/0.25)] hover:shadow-[0_0_50px_oklch(0.65_0.18_250/0.4)] transition-all duration-300 rounded-xl min-h-12 h-12 gap-2.5 min-w-0 touch-manipulation"
+                    >
+                      {isRefactoring ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          <span>{refactorStepLabel || "Weaving…"}</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="size-4" />
+                          Refine Chapter
+                        </>
+                      )}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && (
+                  <TooltipContent side="top" sideOffset={8} className="max-w-[220px] text-center">
+                    Edit a beat or use the prompt to guide the rewrite first
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <div className="mt-2 space-y-1 flex flex-col items-center text-center max-w-[min(100%,18rem)] sm:max-w-sm">
               <p className="text-xs text-muted-foreground">
                 {warp.wordCount} word{warp.wordCount !== 1 ? "s" : ""} · best results under{" "}

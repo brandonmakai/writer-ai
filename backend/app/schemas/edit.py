@@ -16,7 +16,11 @@ class EditRequest(BaseModel):
         min_length=STRUCTURAL_BULLETS_MIN,
         description="Current structural bullets (3–8) for the chapter.",
     )
-    instruction: str = Field(..., description="Plain-language edit instruction from the user.")
+    instruction: str = Field(
+        ...,
+        max_length=1000,
+        description="Plain-language edit instruction from the user.",
+    )
 
 
 class SearchReplacePair(BaseModel):

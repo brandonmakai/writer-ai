@@ -16,10 +16,12 @@ class ChapterBase(BaseModel):
     text: str = Field(..., description="Chapter text.")
     tone: str | None = Field(
         default=None,
+        max_length=200,
         description="Optional tone guidance (e.g. darker, lighter, more humorous).",
     )
     language: str | None = Field(
         default=None,
+        max_length=100,
         description="Optional target language (defaults to original).",
     )
 

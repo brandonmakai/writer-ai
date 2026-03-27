@@ -14,6 +14,9 @@ export default function WriterAIPage() {
     refactorStepLabel,
     handleRefactor,
     refactorError,
+    handleEdit,
+    isEditing,
+    editError,
   } = useRefactor({
     bullets: warp.bullets,
     chapterText: warp.chapterText,
@@ -47,6 +50,9 @@ export default function WriterAIPage() {
             onRefactor={handleRefactor}
             refactorError={refactorError}
             remainingAttempts={warp.remainingAttempts}
+            onEditInstruction={handleEdit}
+            isEditing={isEditing}
+            editError={editError}
           />
         )}
       </AnimatePresence>

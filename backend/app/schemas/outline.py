@@ -15,6 +15,10 @@ class OutlineRequest(BaseModel):
 class BulletWithAnchor(BaseModel):
     """One structural bullet with the verbatim sentence from the chapter it addresses."""
 
+    label: str | None = Field(
+        None,
+        description="Short title for the beat (e.g. 'Confrontation', 'Turning Point'). Optional.",
+    )
     content: str = Field(..., description="Short summary of the beat or scene.")
     anchor_text: str = Field(
         ...,
@@ -34,7 +38,7 @@ class OutlineResponse(BaseModel):
     suggested_index: int = Field(
         ...,
         ge=0,
-        description="0-based index into bullets of the one beat to highlight as suggested edit in triage.",
+        description="0-based index into bullets of the one beat to highlight as suggested edit.",
     )
 
     @model_validator(mode="after")

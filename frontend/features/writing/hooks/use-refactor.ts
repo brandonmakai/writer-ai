@@ -118,7 +118,7 @@ export function useRefactor({
         const mappedBullets: StoryBullet[] =
           edit.internal_structure.bullets.map((b, i) => ({
             id: crypto.randomUUID(),
-            label: `Beat ${i + 1}`,
+            label: b.label || `Beat ${i + 1}`,
             content: b.content,
             anchor_text: b.anchor_text,
           }))

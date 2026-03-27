@@ -39,9 +39,9 @@ def test_chapter_to_outline_returns_200_and_bullets() -> None:
     data = response.json()
     assert "bullets" in data
     assert data["bullets"] == [
-        {"content": "First structural beat.", "anchor_text": "John met Maria."},
-        {"content": "Second beat.", "anchor_text": "They argued."},
-        {"content": "Third beat.", "anchor_text": "She left."},
+        {"label": None, "content": "First structural beat.", "anchor_text": "John met Maria."},
+        {"label": None, "content": "Second beat.", "anchor_text": "They argued."},
+        {"label": None, "content": "Third beat.", "anchor_text": "She left."},
     ]
     assert len(data["bullets"]) == 3
     assert data["suggested_index"] == 1

@@ -175,8 +175,9 @@ def _build_edit_prompt(request: EditRequest) -> str:
     parts.append("")
     parts.append(
         'Return a JSON object with keys: "edits" (array of {search, replace} pairs) '
-        'and "bullets" (array of {content, anchor_text} reflecting the edited chapter). '
-        "anchor_text must be verbatim from the EDITED chapter."
+        'and "bullets" (array of {label, content, anchor_text} reflecting the edited chapter). '
+        '"label" is a short, evocative title for the beat (2–5 words, e.g. "Confrontation", '
+        '"The Turning Point"). anchor_text must be verbatim from the EDITED chapter.'
     )
     return "\n".join(parts)
 

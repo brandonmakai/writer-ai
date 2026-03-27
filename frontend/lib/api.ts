@@ -22,6 +22,7 @@ export interface OutlineRequest {
 
 /** One structural bullet with anchor text (mirrors backend BulletWithAnchor). */
 export interface BulletWithAnchor {
+  label?: string;
   content: string;
   anchor_text: string;
 }

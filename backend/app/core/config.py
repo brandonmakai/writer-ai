@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     env: str = Field(default="local", description="Application environment name.")
-    debug: bool = Field(default=True, description="Enable debug mode.")
+    debug: bool = Field(default=False, description="Enable debug mode.")
     log_level: str = Field(default="INFO", description="Root log level.")
 
     # Gemini will likely be substituted for another LLM provider in the future
@@ -22,7 +22,11 @@ class Settings(BaseSettings):
     )
     gemini_model: str = Field(
         default="gemini-2.5-flash",
-        description="LLM model for rewrites (e.g. gemini-2.5-flash, gemini-1.5-pro).",
+        description="LLM model for rewrites.",
+    )
+    gemini_model_fast: str = Field(
+        default="gemini-2.0-flash",
+        description="LLM model for outline and edit (cheaper, faster).",
     )
     gemini_structured_output: bool = Field(
         default=True,
@@ -30,9 +34,8 @@ class Settings(BaseSettings):
     )
 
     cors_origins: list[str] = Field(
-        # TODO: remove before going into prod
-        default_factory=lambda: ["http://localhost:3000"],
-        description="Allowed CORS origins for the frontend.",
+        default_factory=list,
+        description="Allowed CORS origins. Must be set via CORS_ORIGINS env var in production.",
     )
 
     limit_usage_per_ip: bool = Field(

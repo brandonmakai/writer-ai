@@ -13,13 +13,14 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     configure_logging()
 
+    settings = get_settings()
     app = FastAPI(
         title="Writer AI API",
         description="Backend for the Rewrite from Outline MVP.",
         version="0.1.0",
+        docs_url="/docs" if settings.debug else None,
+        redoc_url="/redoc" if settings.debug else None,
     )
-
-    settings = get_settings()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

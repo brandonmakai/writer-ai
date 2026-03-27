@@ -1,12 +1,48 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchOutline } from "@/lib/api"
 import { exampleChapter, exampleBullets } from "@/lib/example-data"
 
 export type WarpPhase = "landing" | "editor"
+
+const DRAFT_KEY = "writer-ai-draft"
+
+interface DraftSnapshot {
+  chapterText: string
+  bullets: StoryBullet[]
+  phase: WarpPhase
+}
+
+function readDraft(): DraftSnapshot | null {
+  if (typeof window === "undefined") return null
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY)
+    return raw ? (JSON.parse(raw) as DraftSnapshot) : null
+  } catch {
+    return null
+  }
+}
+
+function writeDraft(snapshot: DraftSnapshot): void {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot))
+  } catch {
+    // quota exceeded or private browsing — silently ignore
+  }
+}
+
+function deleteDraft(): void {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.removeItem(DRAFT_KEY)
+  } catch {
+    // ignore
+  }
+}
 
 export function useWarpState() {
   const [phase, setPhase] = useState<WarpPhase>("landing")
@@ -18,6 +54,22 @@ export function useWarpState() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null)
+
+  // Restore draft on first client render
+  useEffect(() => {
+    const draft = readDraft()
+    if (!draft) return
+    setChapterText(draft.chapterText)
+    setBullets(draft.bullets)
+    setPhase(draft.phase)
+  }, [])
+
+  // Persist draft whenever editor state changes
+  useEffect(() => {
+    if (phase === "editor") {
+      writeDraft({ chapterText, bullets, phase })
+    }
+  }, [phase, chapterText, bullets])
 
   const handleAnalyze = useCallback(async () => {
     if (!chapterText.trim()) return
@@ -56,6 +108,7 @@ export function useWarpState() {
   }, [])
 
   const handleBackToLanding = useCallback(() => {
+    deleteDraft()
     setPhase("landing")
     setHighlights([])
   }, [])

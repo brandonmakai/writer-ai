@@ -345,7 +345,8 @@ class GeminiClient:
                     raw_preview,
                 )
 
-        assert llm_result is not None  # loop raises or breaks with result
+        if llm_result is None:
+            raise RuntimeError("edit_chapter: llm_result unexpectedly None after parse loop")
 
         # Apply search-replace edits to the original chapter text
         chapter_text = request.chapter.text

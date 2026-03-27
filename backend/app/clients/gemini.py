@@ -241,6 +241,7 @@ class GeminiClient:
     def __init__(self, settings: Settings) -> None:
         self._api_key = settings.gemini_api_key or ""
         self._model = settings.gemini_model
+        self._model_fast = settings.gemini_model_fast
         self._base = GEMINI_BASE
         self._structured_output = settings.gemini_structured_output
         self._dev_log = settings.debug
@@ -253,7 +254,7 @@ class GeminiClient:
         prompt = _build_rewrite_prompt(request)
         url = f"{self._base}/models/{self._model}:generateContent"
 
-        MAX_OUTPUT_TOKENS = 8192
+        MAX_OUTPUT_TOKENS = 4096  # was 8192; 2× the hard word cap is ample headroom
         generation_config: dict[str, Any] = {"maxOutputTokens": MAX_OUTPUT_TOKENS}
         if self._structured_output:
             generation_config["responseMimeType"] = "application/json"
@@ -291,7 +292,7 @@ class GeminiClient:
             raise ValueError("gemini_api_key is not set")
 
         prompt = _build_edit_prompt(request)
-        url = f"{self._base}/models/{self._model}:generateContent"
+        url = f"{self._base}/models/{self._model_fast}:generateContent"
 
         MAX_OUTPUT_TOKENS = 2048
         MAX_EDIT_PARSE_ATTEMPTS = 3
@@ -377,7 +378,7 @@ class GeminiClient:
         if not self._api_key:
             raise ValueError("gemini_api_key is not set")
         prompt = _build_outline_prompt(request)
-        url = f"{self._base}/models/{self._model}:generateContent"
+        url = f"{self._base}/models/{self._model_fast}:generateContent"
 
         MAX_OUTPUT_TOKENS = 4096
         generation_config: dict[str, Any] = {"maxOutputTokens": MAX_OUTPUT_TOKENS}

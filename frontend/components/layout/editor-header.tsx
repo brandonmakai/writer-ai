@@ -100,7 +100,7 @@ export function EditorHeader({
                 className="text-[11px] font-medium"
                 style={{ color: "oklch(0.78 0.14 75)" }}
               >
-                Refactored
+                Rewritten
               </span>
             </>
           ) : (

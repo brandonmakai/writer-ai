@@ -92,7 +92,7 @@ export function EditorView({
 
     const toastT = setTimeout(() => {
       toast(`Structure Mapped! ${beatCount} story beat${beatCount !== 1 ? "s" : ""} identified`, {
-        description: "Write a prompt to reshape the structure, then refine the chapter.",
+        description: "Adjust beats with a prompt (or reorder/delete one), then rewrite the chapter.",
         position: "top-center",
       })
     }, 800)
@@ -271,8 +271,8 @@ export function EditorView({
           <DialogHeader>
             <DialogTitle>You&apos;ve reached your rewrite limit</DialogTitle>
             <DialogDescription className="pt-1">
-              You&apos;ve used all 5 of your free AI refinements. You can still read,
-              copy, and download your story — come back later to run more refinements.
+              You&apos;ve used all 5 of your free AI rewrites. You can still read,
+              copy, and download your story — come back later to run more rewrites.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -344,20 +344,20 @@ export function EditorView({
                       {isRefactoring ? (
                         <>
                           <Loader2 className="size-4 animate-spin" />
-                          <span>{refactorStepLabel || "Weaving…"}</span>
+                          <span>{refactorStepLabel || "Rewriting…"}</span>
                         </>
                       ) : (
                         <>
                           <RefreshCw className="size-4" />
-                          Refine Chapter
+                          Rewrite Chapter
                         </>
                       )}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && !isAtLimit && !isExhaustionError && (
-                  <TooltipContent side="top" sideOffset={8} className="max-w-[220px] text-center">
-                    Write a prompt below to change the structure first.
+                  <TooltipContent side="top" sideOffset={8} className="max-w-[240px] text-center">
+                    Change beats with a prompt, or reorder/delete one — then rewrite the chapter.
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -367,6 +367,11 @@ export function EditorView({
                 {warp.wordCount} word{warp.wordCount !== 1 ? "s" : ""} · best results under{" "}
                 {SOFT_WORD_LIMIT.toLocaleString()} words
               </p>
+              {warp.bullets.length > 0 && !overHardLimit && (
+                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                  Prompts update beats only. Rewrite replaces the full chapter text to match them.
+                </p>
+              )}
               {overHardLimit && (
                 <p className="text-xs text-destructive">
                   This preview is for single chapters up to {HARD_WORD_LIMIT.toLocaleString()} words.

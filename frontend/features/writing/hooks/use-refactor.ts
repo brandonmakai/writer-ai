@@ -7,8 +7,8 @@ import { fetchRewrite, fetchEdit } from "@/lib/api"
 
 const REFACTOR_STEP_LABELS = [
   "Analyzing structure…",
-  "Refactoring scenes…",
-  "Applying your edits…",
+  "Rewriting scenes…",
+  "Rewriting prose…",
   "Finalizing…",
 ] as const
 const REFACTOR_STEP_INTERVAL_MS = 2500
@@ -81,7 +81,7 @@ export function useRefactor({
     } catch (err) {
       console.error("Rewrite API error:", err)
       setRefactorError(
-        err instanceof Error ? err.message : "Refactor failed. Please try again."
+        err instanceof Error ? err.message : "Rewrite failed. Please try again."
       )
     } finally {
       setIsRefactoring(false)

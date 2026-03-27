@@ -4,7 +4,6 @@ import { motion } from "framer-motion"
 import { BookOpen, ArrowLeft, Sparkles, List } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { SOFT_WORD_LIMIT } from "@/features/writing/types"
 
 interface EditorHeaderProps {
   onBack: () => void
@@ -71,12 +70,7 @@ export function EditorHeader({
           </Button>
         )}
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50 shrink-0">
-          <span
-            className="tabular-nums"
-            title={`Best results under ${SOFT_WORD_LIMIT.toLocaleString()} words`}
-          >
-            {wordCount} words
-          </span>
+          <span className="tabular-nums">{wordCount} words</span>
           <span className="hidden sm:inline text-border">|</span>
           <span className="hidden sm:inline tabular-nums">{bulletCount} beats</span>
           {highlightCount > 0 && (

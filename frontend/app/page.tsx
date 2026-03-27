@@ -37,7 +37,6 @@ export default function WriterAIPage() {
             onTryExample={warp.handleTryExample}
             isAnalyzing={warp.isAnalyzing}
             analyzeError={warp.analyzeError}
-            remainingAttempts={warp.remainingAttempts}
             wordCount={warp.wordCount}
           />
         )}
@@ -49,7 +48,6 @@ export default function WriterAIPage() {
             refactorStepLabel={refactorStepLabel}
             onRefactor={handleRefactor}
             refactorError={refactorError}
-            remainingAttempts={warp.remainingAttempts}
             onEditInstruction={handleEdit}
             isEditing={isEditing}
             editError={editError}

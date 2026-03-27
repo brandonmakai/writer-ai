@@ -5,7 +5,14 @@ import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { EditorHeader } from "@/components/layout/editor-header"
 import { ChapterEditor } from "./chapter-editor"
@@ -23,11 +30,12 @@ export interface EditorViewProps {
   refactorStepLabel?: string
   onRefactor: () => void
   refactorError?: string | null
-  remainingAttempts?: number | null
   isEditing?: boolean
   onEditInstruction?: (instruction: string) => void
   editError?: string | null
 }
+
+const EXHAUSTION_PHRASE = "free attempts"
 
 export function EditorView({
   warp,
@@ -36,7 +44,6 @@ export function EditorView({
   refactorStepLabel = "",
   onRefactor,
   refactorError = null,
-  remainingAttempts = null,
   isEditing = false,
   onEditInstruction,
   editError = null,
@@ -48,9 +55,19 @@ export function EditorView({
   const [highlightBeatsTrigger, setHighlightBeatsTrigger] = useState(false)
   const [beatsEdited, setBeatsEdited] = useState(false)
   const [beatPulseSignal, setBeatPulseSignal] = useState(0)
+  const [limitModalOpen, setLimitModalOpen] = useState(false)
   const prevIsRefactoringRef = useRef(false)
   const tooltipPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
+  const isAtLimit = warp.remainingAttempts === 0
+  const isExhaustionError = !!refactorError?.includes(EXHAUSTION_PHRASE)
+
+  // Open the limit modal when attempts run out or a 429 is returned
+  useEffect(() => {
+    if (isAtLimit || isExhaustionError) {
+      setLimitModalOpen(true)
+    }
+  }, [isAtLimit, isExhaustionError])
 
   // Reset beatsEdited after a successful refactor so the user must edit again
   useEffect(() => {
@@ -249,6 +266,21 @@ export function EditorView({
         </Dialog>
       )}
 
+      <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>You&apos;ve reached your rewrite limit</DialogTitle>
+            <DialogDescription className="pt-1">
+              You&apos;ve used all 5 of your free AI refinements. You can still read,
+              copy, and download your story — come back later to run more refinements.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setLimitModalOpen(false)}>Got it</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -301,6 +333,8 @@ export function EditorView({
                       onClick={onRefactor}
                       disabled={
                         isRefactoring ||
+                        isAtLimit ||
+                        isExhaustionError ||
                         warp.bullets.length === 0 ||
                         overHardLimit ||
                         (!beatsEdited && warp.bullets.length > 0)
@@ -321,7 +355,7 @@ export function EditorView({
                     </Button>
                   </span>
                 </TooltipTrigger>
-                {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && (
+                {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && !isAtLimit && !isExhaustionError && (
                   <TooltipContent side="top" sideOffset={8} className="max-w-[220px] text-center">
                     Write a prompt below to change the structure first.
                   </TooltipContent>
@@ -339,13 +373,8 @@ export function EditorView({
                   Please shorten or split your text.
                 </p>
               )}
-              {remainingAttempts !== null && (
-                <p className="text-xs text-muted-foreground">
-                  {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
-                </p>
-              )}
             </div>
-            {refactorError && (
+            {refactorError && !isExhaustionError && (
               <p role="alert" className="mt-3 max-w-sm text-center text-sm text-destructive">
                 {refactorError}
               </p>

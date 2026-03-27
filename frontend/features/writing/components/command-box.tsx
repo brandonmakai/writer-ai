@@ -24,7 +24,6 @@ export function CommandBox({
   onTryExample,
   isAnalyzing = false,
   analyzeError = null,
-  remainingAttempts = null,
   wordCount = 0,
 }: CommandBoxProps) {
   const overHardLimit = wordCount > HARD_WORD_LIMIT
@@ -132,11 +131,7 @@ export function CommandBox({
             </p>
           )}
         </div>
-        {remainingAttempts !== null && (
-          <p className="text-center text-xs text-muted-foreground">
-            {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""} left
-          </p>
-        )}
+
         {analyzeError && (
           <p role="alert" className="text-center text-sm text-destructive">
             {analyzeError}

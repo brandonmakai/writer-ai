@@ -75,7 +75,7 @@ export function EditorView({
 
     const toastT = setTimeout(() => {
       toast(`Structure Mapped! ${beatCount} story beat${beatCount !== 1 ? "s" : ""} identified`, {
-        description: "Edit a beat or write a prompt to refine the chapter.",
+        description: "Write a prompt to reshape the structure, then refine the chapter.",
         position: "top-center",
       })
     }, 800)
@@ -323,7 +323,7 @@ export function EditorView({
                 </TooltipTrigger>
                 {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && (
                   <TooltipContent side="top" sideOffset={8} className="max-w-[220px] text-center">
-                    Edit a beat or use a prompt to guide the rewrite first.
+                    Write a prompt below to change the structure first.
                   </TooltipContent>
                 )}
               </Tooltip>

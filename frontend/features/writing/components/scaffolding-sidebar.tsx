@@ -223,12 +223,12 @@ function BeatAgentBox({
           className="w-full bg-transparent text-[12px] text-foreground/80 placeholder:text-muted-foreground/55 leading-relaxed resize-none focus:outline-none px-3 pt-3 pb-9 disabled:opacity-50"
         />
         <div className="absolute bottom-2 right-2 flex items-center gap-2">
-          <span className="text-[9px] text-muted-foreground/50 select-none">↵ {hasBeats ? "edit" : "generate"}</span>
+          <span className="text-[9px] text-muted-foreground/50 select-none">↵ {hasBeats ? "apply" : "generate"}</span>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
             className="flex items-center justify-center size-6 rounded-md bg-primary/80 hover:bg-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 text-primary-foreground"
-            aria-label={hasBeats ? "Apply edit" : "Generate beats"}
+            aria-label={hasBeats ? "Apply prompt" : "Generate beats"}
           >
             {isBusy ? (
               <Loader2 className="size-3 animate-spin" />

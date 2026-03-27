@@ -6,19 +6,27 @@ from app.core.usage import UsageTracker, get_client_ip
 
 
 def test_get_client_ip_uses_x_forwarded_for() -> None:
-    """First IP in X-Forwarded-For is used when present."""
+    """Last (platform-appended) IP in X-Forwarded-For is used when present."""
     request = MagicMock()
     request.headers = {"x-forwarded-for": "203.0.113.1, 70.41.3.18"}
     request.client = None
-    assert get_client_ip(request) == "203.0.113.1"
+    assert get_client_ip(request) == "70.41.3.18"
 
 
 def test_get_client_ip_uses_x_forwarded_for_stripped() -> None:
-    """Whitespace around X-Forwarded-For is stripped."""
+    """Whitespace around the last X-Forwarded-For entry is stripped."""
     request = MagicMock()
     request.headers = {"x-forwarded-for": "  192.168.1.1  , 10.0.0.1"}
     request.client = None
-    assert get_client_ip(request) == "192.168.1.1"
+    assert get_client_ip(request) == "10.0.0.1"
+
+
+def test_get_client_ip_trusts_last_forwarded_for_entry() -> None:
+    """Spoofed leading IPs are ignored; the last (platform-appended) IP is returned."""
+    request = MagicMock()
+    request.headers = {"x-forwarded-for": "1.1.1.1, 2.2.2.2"}
+    request.client = None
+    assert get_client_ip(request) == "2.2.2.2"
 
 
 def test_get_client_ip_uses_x_real_ip_when_no_forwarded() -> None:

@@ -22,7 +22,7 @@ def get_client_ip(request: Request) -> str:
     """Extract the real client IP, respecting proxy headers."""
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
-        return forwarded.strip().split(",")[0].strip()
+        return forwarded.strip().split(",")[-1].strip()  # rightmost = platform-trusted
     real_ip = request.headers.get("x-real-ip")
     if real_ip:
         return real_ip.strip()
@@ -59,8 +59,7 @@ class UsageTracker:
             raise HTTPException(
                 status_code=429,
                 detail=(
-                    f"You've used all {MAX_ATTEMPTS_PER_IP} free attempts. "
-                    "Please try again later."
+                    f"You've used all {MAX_ATTEMPTS_PER_IP} free attempts. Please try again later."
                 ),
             )
 

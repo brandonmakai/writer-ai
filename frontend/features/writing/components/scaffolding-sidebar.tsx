@@ -25,6 +25,7 @@ interface ScaffoldingSidebarProps {
   isEditing?: boolean
   editError?: string | null
   onBeatsEdited?: () => void
+  pulseSignal?: number
 }
 
 function BulletCard({
@@ -61,20 +62,12 @@ function BulletCard({
         opacity: 1,
         y: 0,
         scale: highlighted ? 1.05 : 1,
-        boxShadow: pulsing
-          ? [
-              "0 0 0px rgba(100, 140, 255, 0)",
-              "0 0 18px rgba(100, 140, 255, 0.55)",
-              "0 0 0px rgba(100, 140, 255, 0)",
-            ]
-          : "0 0 0px rgba(100, 140, 255, 0)",
       }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{
         opacity: { duration: 0.3, delay: index * 0.04 },
         y: { duration: 0.3, delay: index * 0.04 },
         scale: { duration: 0.2, ease: "easeOut" },
-        boxShadow: { duration: 1.5, repeat: 1 },
       }}
       whileDrag={{
         scale: 1.03,
@@ -92,6 +85,9 @@ function BulletCard({
           : "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
       }}
     >
+      {pulsing && (
+        <span className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-primary/50 animate-[pulse_1s_ease-in-out_3]" />
+      )}
       <div className="flex items-start gap-2.5 p-3.5">
         <div className="mt-1 cursor-grab active:cursor-grabbing text-muted-foreground/25 hover:text-muted-foreground/50 transition-colors touch-none">
           <GripVertical className="size-3.5" />
@@ -285,16 +281,30 @@ export function ScaffoldingSidebar({
   isEditing = false,
   editError = null,
   onBeatsEdited,
+  pulseSignal = 0,
 }: ScaffoldingSidebarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const hasPulsedRef = useRef(false)
   const [pulsingFirstBeat, setPulsingFirstBeat] = useState(false)
 
-  // Pulse the first beat once when beats first appear
+  // Re-trigger pulse when the parent signals it (e.g. tooltip hover on Refine button)
+  useEffect(() => {
+    if (!pulseSignal) return
+    const t1 = setTimeout(() => setPulsingFirstBeat(true), 0)
+    const t2 = setTimeout(() => setPulsingFirstBeat(false), 3200)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [pulseSignal])
+
+  // Pulse the first beat once when beats first appear.
+  // Note: hasPulsedRef is set inside the timeout callback (not the effect body) so that
+  // React Strict Mode's synchronous cleanup + re-run cycle doesn't cancel the timer while
+  // the guard flag is already true, leaving the pulse permanently skipped.
   useEffect(() => {
     if (bullets.length > 0 && !hasPulsedRef.current) {
-      hasPulsedRef.current = true
-      const startT = setTimeout(() => setPulsingFirstBeat(true), 0)
+      const startT = setTimeout(() => {
+        hasPulsedRef.current = true
+        setPulsingFirstBeat(true)
+      }, 0)
       const endT = setTimeout(() => setPulsingFirstBeat(false), 3200)
       return () => {
         clearTimeout(startT)

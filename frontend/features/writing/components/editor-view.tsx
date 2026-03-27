@@ -46,6 +46,7 @@ export function EditorView({
   const [bulletsDialogOpen, setBulletsDialogOpen] = useState(false)
   const [highlightBeatsTrigger, setHighlightBeatsTrigger] = useState(false)
   const [beatsEdited, setBeatsEdited] = useState(false)
+  const [beatPulseSignal, setBeatPulseSignal] = useState(0)
   const prevIsRefactoringRef = useRef(false)
   const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
 
@@ -182,6 +183,7 @@ export function EditorView({
             isEditing={isEditing}
             editError={editError}
             onBeatsEdited={handleBeatsEdited}
+            pulseSignal={beatPulseSignal}
           />
         </motion.div>
 
@@ -212,6 +214,7 @@ export function EditorView({
                 chapterText={warp.chapterText}
                 onRemainingAttemptsChange={warp.setRemainingAttempts}
                 onBeatsEdited={handleBeatsEdited}
+                pulseSignal={beatPulseSignal}
               />
             </div>
           </DialogContent>
@@ -248,7 +251,7 @@ export function EditorView({
 
           <div className="relative flex flex-col items-center">
             <TooltipProvider>
-              <Tooltip>
+              <Tooltip onOpenChange={(open) => { if (open) setBeatPulseSignal((n) => n + 1) }}>
                 <TooltipTrigger asChild>
                   <span className="inline-flex">
                     <Button
@@ -278,7 +281,7 @@ export function EditorView({
                 </TooltipTrigger>
                 {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && (
                   <TooltipContent side="top" sideOffset={8} className="max-w-[220px] text-center">
-                    Edit a beat or use the prompt to guide the rewrite first
+                    Edit a beat or use a prompt to guide the rewrite first.
                   </TooltipContent>
                 )}
               </Tooltip>

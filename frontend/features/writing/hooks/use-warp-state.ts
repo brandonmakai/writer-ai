@@ -6,6 +6,7 @@ import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchOutline } from "@/lib/api"
 import { exampleChapter, exampleBullets } from "@/lib/example-data"
+import { sanitizeText } from "@/lib/sanitize"
 
 export type WarpPhase = "landing" | "editor"
 
@@ -83,8 +84,8 @@ export function useWarpState() {
       const mapped: StoryBullet[] = outline.bullets.map((b, i) => ({
         id: crypto.randomUUID(),
         label: `Beat ${i + 1}`,
-        content: b.content,
-        anchor_text: b.anchor_text,
+        content: sanitizeText(b.content),
+        anchor_text: sanitizeText(b.anchor_text),
       }))
       setBullets(mapped)
       setHighlights([])

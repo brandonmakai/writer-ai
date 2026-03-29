@@ -5,6 +5,7 @@ import posthog from "posthog-js"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchRewrite, fetchEdit } from "@/lib/api"
+import { sanitizeText } from "@/lib/sanitize"
 
 const REFACTOR_STEP_LABELS = [
   "Analyzing structure…",
@@ -61,19 +62,19 @@ export function useRefactor({
         chapter: { text: chapterText },
         bullets: bullets.map((b) => b.content),
       })
-      setChapterText(rewrite.chapter_text)
+      setChapterText(sanitizeText(rewrite.chapter_text))
       setHighlights(
         rewrite.change_highlights.map((h) => ({
-          updated: h.updated,
-          original: h.original,
+          updated: sanitizeText(h.updated),
+          original: sanitizeText(h.original),
         }))
       )
       const mappedBullets: StoryBullet[] = rewrite.internal_structure.bullets.map(
         (b, i) => ({
           id: crypto.randomUUID(),
           label: `Beat ${i + 1}`,
-          content: b.content,
-          anchor_text: b.anchor_text,
+          content: sanitizeText(b.content),
+          anchor_text: sanitizeText(b.anchor_text),
         })
       )
       setBullets(mappedBullets)
@@ -117,19 +118,19 @@ export function useRefactor({
           bullets: bullets.map((b) => b.content),
           instruction,
         })
-        setChapterText(edit.chapter_text)
+        setChapterText(sanitizeText(edit.chapter_text))
         setHighlights(
           edit.change_highlights.map((h) => ({
-            updated: h.updated,
-            original: h.original,
+            updated: sanitizeText(h.updated),
+            original: sanitizeText(h.original),
           }))
         )
         const mappedBullets: StoryBullet[] =
           edit.internal_structure.bullets.map((b, i) => ({
             id: crypto.randomUUID(),
             label: b.label || `Beat ${i + 1}`,
-            content: b.content,
-            anchor_text: b.anchor_text,
+            content: sanitizeText(b.content),
+            anchor_text: sanitizeText(b.anchor_text),
           }))
         setBullets(mappedBullets)
         setRemainingAttempts?.(n ?? null)

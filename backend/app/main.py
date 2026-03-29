@@ -7,6 +7,7 @@ from app.api.routes.chapter import router as chapter_router
 from app.api.routes.health import router as health_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.core.middleware import EnforceContentTypeMiddleware
 
 
 def create_app() -> FastAPI:
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
     )
+    app.add_middleware(EnforceContentTypeMiddleware)
 
     # Routers
     app.include_router(health_router)

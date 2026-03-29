@@ -10,5 +10,9 @@
  * prose, so any tag is by definition unwanted.
  */
 export function sanitizeText(raw: string): string {
-  return raw.replace(/<[^>]*>/g, "")
+  // Matches only well-formed HTML tags: opening (<tag …>), closing (</tag>),
+  // self-closing (<tag />), and declarations (<!…>).
+  // Requiring a letter, /, or ! after < avoids stripping bare comparisons
+  // like "x < 3 then y > 0" that happen to contain angle brackets in prose.
+  return raw.replace(/<[/!a-zA-Z][^>]*>/g, "")
 }

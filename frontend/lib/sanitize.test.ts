@@ -57,15 +57,18 @@ describe("sanitizeText", () => {
     expect(sanitizeText(text)).toBe(text)
   })
 
-  it("strips anything between angle brackets, including bare comparisons", () => {
-    // The regex treats any <...> span as a tag — a browser would too.
-    // Math comparisons in fiction prose are essentially nonexistent, and any
-    // `<expr>` pattern in AI output is more likely an injection than valid prose.
-    expect(sanitizeText("if x < 3 then y > 0")).toBe("if x  0")
+  it("preserves bare angle-bracket comparisons in prose", () => {
+    // < followed by a digit or space is not a valid HTML tag name — not stripped
+    expect(sanitizeText("if x < 3 then y > 0")).toBe("if x < 3 then y > 0")
   })
 
-  it("preserves a lone < that has no matching >", () => {
-    // A dangling < with no closing > is not matched by the regex
+  it("preserves a lone < with no closing >", () => {
     expect(sanitizeText("score < 100")).toBe("score < 100")
+  })
+
+  it("strips html comments", () => {
+    expect(sanitizeText("Text <!-- inject --> more text.")).toBe(
+      "Text  more text."
+    )
   })
 })

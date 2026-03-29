@@ -1,19 +1,12 @@
-"""Per-IP usage tracking backed by SQLite."""
+"""Per-IP usage tracking backed by Upstash Redis (production) or in-memory (local dev)."""
 
-import sqlite3
-from pathlib import Path
+from __future__ import annotations
 
+import redis.asyncio as aioredis
 from fastapi import HTTPException, Request
 
-# backend/data/usage.db — two levels up from app/core/
-_DB_PATH = str(Path(__file__).resolve().parents[2] / "data" / "usage.db")
-
-_INIT_SQL = """
-CREATE TABLE IF NOT EXISTS ip_usage (
-    ip TEXT PRIMARY KEY,
-    count INTEGER NOT NULL DEFAULT 0
-)
-"""
+_KEY_PREFIX = "writer-ai:ip:"
+_TTL_SECONDS = 86400  # 24-hour rolling window
 
 
 def get_client_ip(request: Request) -> str:
@@ -30,54 +23,63 @@ def get_client_ip(request: Request) -> str:
 
 
 class UsageTracker:
-    """Track and enforce per-IP attempt limits using a SQLite store."""
+    """Track and enforce per-IP attempt limits.
+
+    Uses Upstash Redis in production (persistent across deploys) and an
+    in-memory dict in local dev (no Redis connection required).
+    """
 
     def __init__(
         self,
-        db_path: str = _DB_PATH,
+        redis_url: str | None,
         max_attempts: int = 5,
         enabled: bool = True,
     ) -> None:
-        self._path = db_path
         self._max = max_attempts
         self._enabled = enabled
-        self._conn: sqlite3.Connection | None = None
+        self._redis: aioredis.Redis | None = None
+        self._memory: dict[str, int] = {}
 
-    def _get_conn(self) -> sqlite3.Connection:
-        if self._conn is None:
-            if self._path != ":memory:":
-                Path(self._path).parent.mkdir(parents=True, exist_ok=True)
-            self._conn = sqlite3.connect(self._path)
-            self._conn.execute(_INIT_SQL)
-            self._conn.commit()
-        return self._conn
+        if redis_url:
+            self._redis = aioredis.from_url(
+                redis_url,
+                decode_responses=True,
+                socket_connect_timeout=3,
+                socket_timeout=3,
+            )
 
-    def get_count(self, ip: str) -> int:
+    def _key(self, ip: str) -> str:
+        return f"{_KEY_PREFIX}{ip}"
+
+    async def get_count(self, ip: str) -> int:
         """Return the current attempt count for the given IP."""
-        conn = self._get_conn()
-        row = conn.execute("SELECT count FROM ip_usage WHERE ip = ?", (ip,)).fetchone()
-        return int(row[0]) if row else 0
+        if self._redis is not None:
+            val = await self._redis.get(self._key(ip))
+            return int(val) if val else 0
+        return self._memory.get(ip, 0)
 
-    def check(self, ip: str) -> None:
+    async def check(self, ip: str) -> None:
         """Raise HTTP 429 if this IP has reached the attempt limit."""
         if not self._enabled:
             return
-        if self.get_count(ip) >= self._max:
+        if await self.get_count(ip) >= self._max:
             raise HTTPException(
                 status_code=429,
-                detail=(f"You've used all {self._max} free attempts. Please try again later."),
+                detail=f"You've used all {self._max} free attempts. Please try again later.",
             )
 
-    def increment(self, ip: str) -> None:
+    async def increment(self, ip: str) -> None:
         """Record one attempt for the given IP."""
-        conn = self._get_conn()
-        conn.execute(
-            "INSERT INTO ip_usage (ip, count) VALUES (?, 1) "
-            "ON CONFLICT(ip) DO UPDATE SET count = count + 1",
-            (ip,),
-        )
-        conn.commit()
+        if not self._enabled:
+            return
+        if self._redis is not None:
+            count = await self._redis.incr(self._key(ip))
+            if count == 1:
+                # First use — start the 24-hour window
+                await self._redis.expire(self._key(ip), _TTL_SECONDS)
+        else:
+            self._memory[ip] = self._memory.get(ip, 0) + 1
 
-    def remaining(self, ip: str) -> int:
+    async def remaining(self, ip: str) -> int:
         """Return how many attempts remain for the given IP."""
-        return max(0, self._max - self.get_count(ip))
+        return max(0, self._max - await self.get_count(ip))

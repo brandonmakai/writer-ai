@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         description="LLM model for rewrites.",
     )
     gemini_model_fast: str = Field(
-        default="gemini-2.0-flash",
+        default="gemini-2.5-flash-lite",
         description="LLM model for outline and edit (cheaper, faster).",
     )
     gemini_structured_output: bool = Field(
@@ -49,6 +49,22 @@ class Settings(BaseSettings):
     usage_db_path: str = Field(
         default="data/usage.db",
         description="SQLite path for per-IP usage (use :memory: in tests).",
+    )
+    upstash_redis_url: str | None = Field(
+        default=None,
+        description=(
+            "Redis connection URL for per-IP usage tracking. "
+            "Use a rediss:// URL from Upstash. "
+            "If None and env is 'local', falls back to in-memory tracking."
+        ),
+    )
+    allowed_hosts: list[str] = Field(
+        default_factory=lambda: ["*"],
+        description=(
+            "Hosts accepted by TrustedHostMiddleware. "
+            "In production set to your Vercel domain and Railway custom domain. "
+            "Default '*' allows all hosts in local dev."
+        ),
     )
 
 

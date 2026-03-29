@@ -55,7 +55,7 @@ def get_edit_service(
 def _usage_tracker() -> UsageTracker:
     s = get_settings()
     return UsageTracker(
-        db_path=s.usage_db_path,
+        redis_url=s.upstash_redis_url,
         max_attempts=s.max_attempts_per_ip,
         enabled=s.limit_usage_per_ip,
     )

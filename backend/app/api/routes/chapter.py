@@ -33,7 +33,7 @@ async def chapter_to_outline(
 ) -> OutlineResponse:
     """Split the given chapter into 3–8 structural bullet points."""
     ip = get_client_ip(http_request)
-    tracker.check(ip)
+    await tracker.check(ip)
     try:
         result = await service.outline(request)
     except ValueError as e:
@@ -43,8 +43,8 @@ async def chapter_to_outline(
                 detail="Outline generation failed. Please try again.",
             ) from e
         raise
-    tracker.increment(ip)
-    response.headers["X-Remaining-Attempts"] = str(tracker.remaining(ip))
+    await tracker.increment(ip)
+    response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
     return result
 
 
@@ -63,10 +63,10 @@ async def rewrite_from_outline(
 ) -> RewriteResponse:
     """Refactor the given chapter to match the provided structural bullets."""
     ip = get_client_ip(http_request)
-    tracker.check(ip)
+    await tracker.check(ip)
     result = await service.rewrite(request)
-    tracker.increment(ip)
-    response.headers["X-Remaining-Attempts"] = str(tracker.remaining(ip))
+    await tracker.increment(ip)
+    response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
     return result
 
 
@@ -85,7 +85,7 @@ async def edit_chapter(
 ) -> EditResponse:
     """Apply a targeted edit instruction to the chapter text."""
     ip = get_client_ip(http_request)
-    tracker.check(ip)
+    await tracker.check(ip)
     try:
         result = await service.edit(request)
     except ValueError as e:
@@ -95,6 +95,6 @@ async def edit_chapter(
                 detail="Edit generation failed. Please try again.",
             ) from e
         raise
-    tracker.increment(ip)
-    response.headers["X-Remaining-Attempts"] = str(tracker.remaining(ip))
+    await tracker.increment(ip)
+    response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
     return result

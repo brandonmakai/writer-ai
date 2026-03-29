@@ -12,8 +12,8 @@ class OutlineService:
     def __init__(self, client: GeminiClient) -> None:
         self._client = client
 
-    async def outline(self, request: OutlineRequest) -> OutlineResponse:
-        """Split chapter text into 3–8 structural bullets."""
+    async def outline(self, request: OutlineRequest) -> tuple[OutlineResponse, int]:
+        """Split chapter text into 3–8 structural bullets. Returns (result, tokens_used)."""
         return await self._client.outline_chapter(request)
 
 
@@ -23,7 +23,7 @@ class RewriteService:
     def __init__(self, client: GeminiClient) -> None:
         self._client = client
 
-    async def rewrite(self, request: RewriteRequest) -> RewriteResponse:
+    async def rewrite(self, request: RewriteRequest) -> tuple[RewriteResponse, int]:
         """Refactor chapter text according to the given structural bullets."""
         return await self._client.rewrite_chapter(request)
 
@@ -34,6 +34,6 @@ class EditService:
     def __init__(self, client: GeminiClient) -> None:
         self._client = client
 
-    async def edit(self, request: EditRequest) -> EditResponse:
+    async def edit(self, request: EditRequest) -> tuple[EditResponse, int]:
         """Apply a targeted edit instruction to the chapter via search-replace pairs."""
         return await self._client.edit_chapter(request)

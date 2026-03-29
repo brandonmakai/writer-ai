@@ -66,6 +66,22 @@ class Settings(BaseSettings):
             "Default '*' allows all hosts in local dev."
         ),
     )
+    max_tokens_per_ip: int = Field(
+        default=50_000,
+        description=(
+            "Max LLM tokens consumed per IP per 24h window. "
+            "Blocks large-payload abuse even within the per-IP attempt limit. "
+            "5 normal sessions ≈ 25k tokens; 50k gives 2× headroom."
+        ),
+    )
+    max_tokens_global: int | None = Field(
+        default=None,
+        description=(
+            "Global daily token cap across all IPs. Blocks coordinated VPN-rotation attacks "
+            "that exhaust LLM quota by distributing load across many IPs. "
+            "None disables the global cap (opt-in — set based on your budget)."
+        ),
+    )
 
 
 @lru_cache(maxsize=1)

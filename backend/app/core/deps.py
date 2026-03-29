@@ -58,6 +58,8 @@ def _usage_tracker() -> UsageTracker:
         redis_url=s.upstash_redis_url,
         max_attempts=s.max_attempts_per_ip,
         enabled=s.limit_usage_per_ip,
+        max_tokens_per_ip=s.max_tokens_per_ip,
+        max_tokens_global=s.max_tokens_global,
     )
 
 

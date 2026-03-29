@@ -96,3 +96,66 @@ async def test_usage_tracker_custom_max_attempts() -> None:
     with pytest.raises(HTTPException) as exc_info:
         await tracker.check("5.5.5.5")
     assert exc_info.value.status_code == 429
+
+
+# --- Token tracking ---
+
+
+async def test_token_count_starts_at_zero() -> None:
+    """New IP has token count 0."""
+    tracker = UsageTracker(redis_url=None)
+    assert await tracker.get_token_count("1.2.3.4") == 0
+
+
+async def test_add_tokens_accumulates() -> None:
+    """add_tokens increases count; different IPs are independent."""
+    tracker = UsageTracker(redis_url=None)
+    await tracker.add_tokens("1.1.1.1", 1000)
+    await tracker.add_tokens("1.1.1.1", 500)
+    await tracker.add_tokens("2.2.2.2", 200)
+    assert await tracker.get_token_count("1.1.1.1") == 1500
+    assert await tracker.get_token_count("2.2.2.2") == 200
+
+
+async def test_check_tokens_raises_when_budget_exhausted() -> None:
+    """check_tokens raises 429 once per-IP token budget is reached."""
+    tracker = UsageTracker(redis_url=None, max_tokens_per_ip=500)
+    await tracker.add_tokens("3.3.3.3", 500)
+    with pytest.raises(HTTPException) as exc_info:
+        await tracker.check_tokens("3.3.3.3")
+    assert exc_info.value.status_code == 429
+
+
+async def test_check_tokens_passes_when_under_budget() -> None:
+    """check_tokens does not raise while under the per-IP token limit."""
+    tracker = UsageTracker(redis_url=None, max_tokens_per_ip=1000)
+    await tracker.add_tokens("4.4.4.4", 999)
+    await tracker.check_tokens("4.4.4.4")  # should not raise
+
+
+async def test_check_global_tokens_raises_when_exhausted() -> None:
+    """check_global_tokens raises 429 once the global budget is consumed."""
+    tracker = UsageTracker(redis_url=None, max_tokens_global=1000)
+    await tracker.add_tokens("5.5.5.5", 600)
+    await tracker.add_tokens("6.6.6.6", 400)
+    with pytest.raises(HTTPException) as exc_info:
+        await tracker.check_global_tokens()
+    assert exc_info.value.status_code == 429
+
+
+async def test_check_global_tokens_skipped_when_none() -> None:
+    """check_global_tokens is a no-op when max_tokens_global is None (default)."""
+    tracker = UsageTracker(redis_url=None, max_tokens_global=None)
+    # Load up a huge amount — should not raise since global cap is disabled.
+    await tracker.add_tokens("7.7.7.7", 10_000_000)
+    await tracker.check_global_tokens()  # should not raise
+
+
+async def test_token_tracking_disabled_when_not_enabled() -> None:
+    """When enabled=False, add_tokens is a no-op and checks never raise."""
+    tracker = UsageTracker(
+        redis_url=None, enabled=False, max_tokens_per_ip=100, max_tokens_global=100
+    )
+    await tracker.add_tokens("8.8.8.8", 9999)
+    await tracker.check_tokens("8.8.8.8")  # should not raise
+    await tracker.check_global_tokens()  # should not raise

@@ -34,8 +34,10 @@ async def chapter_to_outline(
     """Split the given chapter into 3–8 structural bullet points."""
     ip = get_client_ip(http_request)
     await tracker.check(ip)
+    await tracker.check_tokens(ip)
+    await tracker.check_global_tokens()
     try:
-        result = await service.outline(request)
+        result, tokens = await service.outline(request)
     except ValueError as e:
         if "Failed to parse Gemini" in str(e):
             raise HTTPException(
@@ -44,6 +46,7 @@ async def chapter_to_outline(
             ) from e
         raise
     await tracker.increment(ip)
+    await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
     return result
 
@@ -64,8 +67,11 @@ async def rewrite_from_outline(
     """Refactor the given chapter to match the provided structural bullets."""
     ip = get_client_ip(http_request)
     await tracker.check(ip)
-    result = await service.rewrite(request)
+    await tracker.check_tokens(ip)
+    await tracker.check_global_tokens()
+    result, tokens = await service.rewrite(request)
     await tracker.increment(ip)
+    await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
     return result
 
@@ -86,8 +92,10 @@ async def edit_chapter(
     """Apply a targeted edit instruction to the chapter text."""
     ip = get_client_ip(http_request)
     await tracker.check(ip)
+    await tracker.check_tokens(ip)
+    await tracker.check_global_tokens()
     try:
-        result = await service.edit(request)
+        result, tokens = await service.edit(request)
     except ValueError as e:
         if "Failed to parse Gemini" in str(e):
             raise HTTPException(
@@ -96,5 +104,6 @@ async def edit_chapter(
             ) from e
         raise
     await tracker.increment(ip)
+    await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
     return result

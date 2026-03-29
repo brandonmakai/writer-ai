@@ -212,6 +212,12 @@ def _check_finish_reason(candidate: dict[str, Any]) -> None:
         raise ValueError(f"Gemini response truncated ({max_tokens_reason})")
 
 
+def _extract_token_count(body: dict[str, Any]) -> int:
+    """Extract total token count from a Gemini generateContent response."""
+    metadata = body.get("usageMetadata") or {}
+    return int(metadata.get("totalTokenCount", 0))
+
+
 def _extract_response_text(body: dict[str, Any]) -> str:
     """Get the first candidate's text from a generateContent response. Raises on missing/blocked."""
     candidates = body.get("candidates") or []
@@ -246,7 +252,7 @@ class GeminiClient:
         self._structured_output = settings.gemini_structured_output
         self._dev_log = settings.debug
 
-    async def rewrite_chapter(self, request: RewriteRequest) -> RewriteResponse:
+    async def rewrite_chapter(self, request: RewriteRequest) -> tuple[RewriteResponse, int]:
         """Call Gemini to refactor the chapter according to the bullets."""
         if not self._api_key:
             raise ValueError("gemini_api_key is not set")
@@ -282,11 +288,11 @@ class GeminiClient:
                     "rewrite_chapter response (dev): %s",
                     json.dumps(result.model_dump(), indent=2),
                 )
-            return result
+            return result, _extract_token_count(body)
         except (KeyError, IndexError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse Gemini response: {e}") from e
 
-    async def edit_chapter(self, request: EditRequest) -> EditResponse:
+    async def edit_chapter(self, request: EditRequest) -> tuple[EditResponse, int]:
         """Call Gemini to produce search-replace pairs, then apply them to the original text."""
         if not self._api_key:
             raise ValueError("gemini_api_key is not set")
@@ -306,6 +312,7 @@ class GeminiClient:
         }
 
         llm_result: LLMEditPayload | None = None
+        total_tokens = 0
         for attempt in range(MAX_EDIT_PARSE_ATTEMPTS):
             async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
                 resp = await _post_with_retry(
@@ -316,6 +323,7 @@ class GeminiClient:
                     log_label="Gemini edit_chapter",
                 )
             body = resp.json()
+            total_tokens += _extract_token_count(body)
             raw: str | None = None
             try:
                 raw = _extract_response_text(body)
@@ -371,9 +379,9 @@ class GeminiClient:
                 scene_summaries=[],
             ),
             edits_applied=applied,
-        )
+        ), total_tokens
 
-    async def outline_chapter(self, request: OutlineRequest) -> OutlineResponse:
+    async def outline_chapter(self, request: OutlineRequest) -> tuple[OutlineResponse, int]:
         """Call Gemini to split the chapter into 3–8 structural bullets."""
         if not self._api_key:
             raise ValueError("gemini_api_key is not set")
@@ -389,6 +397,7 @@ class GeminiClient:
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": generation_config,
         }
+        total_tokens = 0
         for attempt in range(MAX_OUTLINE_PARSE_ATTEMPTS):
             async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
                 resp = await _post_with_retry(
@@ -399,6 +408,7 @@ class GeminiClient:
                     log_label="Gemini outline_chapter",
                 )
             body = resp.json()
+            total_tokens += _extract_token_count(body)
             text: str | None = None
             try:
                 text = _extract_response_text(body)
@@ -408,7 +418,7 @@ class GeminiClient:
                         "outline_chapter response (dev): %s",
                         json.dumps(result.model_dump(), indent=2),
                     )
-                return result
+                return result, total_tokens
             except (KeyError, IndexError, json.JSONDecodeError) as e:
                 raw_preview: str = (
                     (text[:RAW_RESPONSE_LOG_LIMIT] + "... [truncated]")

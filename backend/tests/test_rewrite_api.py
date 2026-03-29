@@ -17,7 +17,7 @@ from app.schemas.rewrite import (
 class MockRewriteService:
     """Returns a fixed response without calling Gemini."""
 
-    async def rewrite(self, request: RewriteRequest) -> RewriteResponse:  # noqa: ARG002
+    async def rewrite(self, request: RewriteRequest) -> tuple[RewriteResponse, int]:  # noqa: ARG002
         bullets = [
             BulletWithAnchor(content=b, anchor_text=f"Anchor for: {b[:20]}.")
             for b in request.bullets
@@ -37,7 +37,7 @@ class MockRewriteService:
             change_highlights=[
                 ChangeHighlight(original="Original.", updated="Updated."),
             ],
-        )
+        ), 200
 
 
 def _override_get_rewrite_service() -> MockRewriteService:

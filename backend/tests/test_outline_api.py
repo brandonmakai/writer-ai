@@ -10,7 +10,7 @@ from app.schemas.outline import BulletWithAnchor, OutlineRequest, OutlineRespons
 class MockOutlineService:
     """Returns a fixed outline without calling Gemini."""
 
-    async def outline(self, request: OutlineRequest) -> OutlineResponse:  # noqa: ARG002
+    async def outline(self, request: OutlineRequest) -> tuple[OutlineResponse, int]:  # noqa: ARG002
         return OutlineResponse(
             bullets=[
                 BulletWithAnchor(content="First structural beat.", anchor_text="John met Maria."),
@@ -18,7 +18,7 @@ class MockOutlineService:
                 BulletWithAnchor(content="Third beat.", anchor_text="She left."),
             ],
             suggested_index=1,
-        )
+        ), 100
 
 
 def _override_get_outline_service() -> MockOutlineService:
@@ -51,7 +51,7 @@ def test_chapter_to_outline_returns_502_on_parse_failure() -> None:
     """When the client raises ValueError('Failed to parse Gemini...'), route returns 502."""
 
     class FailingOutlineService:
-        async def outline(self, request: OutlineRequest) -> OutlineResponse:  # noqa: ARG002
+        async def outline(self, request: OutlineRequest) -> tuple[OutlineResponse, int]:  # noqa: ARG002
             raise ValueError("Failed to parse Gemini response: Unterminated string")
 
     prev = app.dependency_overrides.get(get_outline_service)
@@ -92,7 +92,7 @@ def test_chapter_to_outline_does_not_increment_on_502() -> None:
     class FailingOnceOutlineService:
         call_count = 0
 
-        async def outline(self, request: OutlineRequest) -> OutlineResponse:  # noqa: ARG002
+        async def outline(self, request: OutlineRequest) -> tuple[OutlineResponse, int]:  # noqa: ARG002
             FailingOnceOutlineService.call_count += 1
             if FailingOnceOutlineService.call_count == 1:
                 raise ValueError("Failed to parse Gemini response: bad json")
@@ -103,7 +103,7 @@ def test_chapter_to_outline_does_not_increment_on_502() -> None:
                     BulletWithAnchor(content="Beat three.", anchor_text="Text three."),
                 ],
                 suggested_index=0,
-            )
+            ), 100
 
     prev_svc = app.dependency_overrides.get(get_outline_service)
     app.dependency_overrides[get_outline_service] = lambda: FailingOnceOutlineService()

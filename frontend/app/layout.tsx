@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Merriweather } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
+import { PostHogProvider } from './posthog'
 import './globals.css'
 
 const _inter = Inter({
@@ -51,9 +52,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${_inter.variable} ${_merriweather.variable}`}>
       <body className="font-sans antialiased">
-        {children}
-        <Toaster position="bottom-right" />
-        <Analytics />
+        <PostHogProvider>
+          {children}
+          <Toaster position="bottom-right" />
+          <Analytics />
+        </PostHogProvider>
       </body>
     </html>
   )

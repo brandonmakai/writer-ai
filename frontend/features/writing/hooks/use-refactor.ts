@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
+import posthog from "posthog-js"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchRewrite, fetchEdit } from "@/lib/api"
@@ -78,11 +79,19 @@ export function useRefactor({
       setBullets(mappedBullets)
       setRemainingAttempts?.(n ?? null)
       setRefactorProgress(100)
+      posthog.capture("rewrite_completed", {
+        word_count: rewrite.chapter_text.split(/\s+/).filter(Boolean).length,
+        change_count: rewrite.change_highlights.length,
+        beats_used: bullets.length,
+      })
     } catch (err) {
       console.error("Rewrite API error:", err)
-      setRefactorError(
+      const message =
         err instanceof Error ? err.message : "Rewrite failed. Please try again."
-      )
+      if (message.includes("free attempts")) {
+        posthog.capture("attempt_limit_hit")
+      }
+      setRefactorError(message)
     } finally {
       setIsRefactoring(false)
       setRefactorProgress(0)
@@ -124,17 +133,23 @@ export function useRefactor({
           }))
         setBullets(mappedBullets)
         setRemainingAttempts?.(n ?? null)
+        posthog.capture("edit_completed", {
+          instruction_length: instruction.length,
+          edits_applied: edit.edits_applied,
+        })
       } catch (err) {
         console.error("Edit API error:", err)
         const isNetworkError =
           err instanceof TypeError && err.message === "Failed to fetch"
-        setEditError(
-          isNetworkError
-            ? "Couldn't reach the server. Check your connection and try again."
-            : err instanceof Error
-              ? err.message
-              : "Edit failed. Please try again."
-        )
+        const message = isNetworkError
+          ? "Couldn't reach the server. Check your connection and try again."
+          : err instanceof Error
+            ? err.message
+            : "Edit failed. Please try again."
+        if (message.includes("free attempts")) {
+          posthog.capture("attempt_limit_hit")
+        }
+        setEditError(message)
       } finally {
         setIsEditing(false)
       }

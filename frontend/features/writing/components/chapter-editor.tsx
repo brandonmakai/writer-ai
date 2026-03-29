@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
+import posthog from "posthog-js"
 import { Copy, Download, Check, Pen, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -51,6 +52,7 @@ export function ChapterEditor({
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    posthog.capture("content_copied")
   }
 
   const handleDownload = () => {
@@ -61,6 +63,7 @@ export function ChapterEditor({
     a.download = "chapter.txt"
     a.click()
     URL.revokeObjectURL(url)
+    posthog.capture("content_downloaded")
   }
 
   const handleToggleEdit = useCallback(() => {

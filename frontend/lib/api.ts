@@ -3,10 +3,10 @@
  * Types mirror backend schemas (app/schemas/*).
  */
 
-const API_BASE =
-  typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL
-    ? process.env.NEXT_PUBLIC_API_URL
-    : "http://localhost:8000";
+// In production: NEXT_PUBLIC_API_URL is unset → API_BASE = "" → same-origin
+// Vercel rewrites /api/v1/* to the Railway backend (server-side, URL hidden).
+// In local dev: set NEXT_PUBLIC_API_URL=http://localhost:8000 in .env.local
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 /** Shared chapter context (mirrors backend ChapterBase). */
 export interface ChapterBase {

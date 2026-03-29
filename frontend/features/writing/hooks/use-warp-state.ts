@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
+import posthog from "posthog-js"
 import type { StoryBullet } from "@/features/writing/types"
 import type { ChangeHighlight } from "@/lib/example-data"
 import { fetchOutline } from "@/lib/api"
@@ -89,6 +90,10 @@ export function useWarpState() {
       setHighlights([])
       setRemainingAttempts(n ?? null)
       setPhase("editor")
+      posthog.capture("chapter_analyzed", {
+        word_count: chapterText.trim().split(/\s+/).filter(Boolean).length,
+        beat_count: mapped.length,
+      })
     } catch (err) {
       console.error("Outline API error:", err)
       setAnalyzeError(
@@ -105,6 +110,7 @@ export function useWarpState() {
     setBullets(exampleBullets)
     setHighlights([])
     setPhase("editor")
+    posthog.capture("example_used")
   }, [])
 
   const handleBackToLanding = useCallback(() => {

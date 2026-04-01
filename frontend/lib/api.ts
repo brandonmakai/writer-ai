@@ -1,5 +1,5 @@
 /**
- * API client for the Writer AI FastAPI backend.
+ * API client for the Narrate AI FastAPI backend.
  * Types mirror backend schemas (app/schemas/*).
  */
 

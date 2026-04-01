@@ -46,7 +46,7 @@ export function CommandBox({
             <BookOpen className="size-5 text-primary" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
-            Writer AI
+            Narrate AI
           </h1>
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto text-pretty">

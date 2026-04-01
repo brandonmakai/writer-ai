@@ -17,8 +17,8 @@ const _merriweather = Merriweather({
 })
 
 export const metadata: Metadata = {
-  title: 'Writer AI - Structural Writing Tool',
-  description: 'Transform messy chapters into structured narratives with Writer AI.',
+  title: 'Narrate AI - Structural Writing Tool',
+  description: 'Transform messy chapters into structured narratives with Narrate AI.',
   icons: {
     icon: [
       {

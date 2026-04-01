@@ -1,4 +1,4 @@
-# Writer AI Frontend
+# Narrate AI Frontend
 
 Next.js 15+ (App Router), React 19, Tailwind v4. See [docs/ENGINEERING_GUIDELINES.md](../docs/ENGINEERING_GUIDELINES.md) for commit rules, frontend best practices, and quality gates.
 
@@ -13,7 +13,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The app calls the Writer AI backend for **Analyze** and **Refactor**. Run the backend from the repo root: `cd backend && uv run fastapi dev main.py` (see [backend/README.md](../backend/README.md)). API base URL is set via `NEXT_PUBLIC_API_URL` (default `http://localhost:8000` in development).
+The app calls the Narrate AI backend for **Analyze** and **Refactor**. Run the backend from the repo root: `cd backend && uv run fastapi dev main.py` (see [backend/README.md](../backend/README.md)). API base URL is set via `NEXT_PUBLIC_API_URL` (default `http://localhost:8000` in development).
 
 ## Commands
 

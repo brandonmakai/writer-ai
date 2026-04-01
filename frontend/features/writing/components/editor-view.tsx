@@ -113,6 +113,17 @@ export function EditorView({
     }
   }, [isAtLimit, isExhaustionError])
 
+  // Scroll to the first change highlight whenever highlights are freshly set
+  const prevHighlightCountRef = useRef(0)
+  useEffect(() => {
+    const count = warp.highlights.length
+    if (count > 0 && count !== prevHighlightCountRef.current) {
+      const el = workspaceRef.current?.querySelector("[data-change-highlight='0']")
+      el?.scrollIntoView({ block: "center", behavior: "smooth" })
+    }
+    prevHighlightCountRef.current = count
+  }, [warp.highlights])
+
   // Reset beatsEdited after a successful refactor so the user must edit again
   useEffect(() => {
     if (prevIsRefactoringRef.current && !isRefactoring && !refactorError) {

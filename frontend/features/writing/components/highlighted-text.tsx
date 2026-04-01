@@ -146,10 +146,12 @@ function DiffPopup({
 
 function HighlightedSpan({
   highlight,
+  index,
   onHover,
   onLeave,
 }: {
   highlight: ChangeHighlight
+  index: number
   onHover: (rect: DOMRect) => void
   onLeave: () => void
 }) {
@@ -164,6 +166,7 @@ function HighlightedSpan({
   return (
     <span
       ref={ref}
+      data-change-highlight={index}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onLeave}
       className="relative cursor-help rounded-sm transition-colors duration-200"
@@ -230,6 +233,8 @@ export function HighlightedText({
     setActiveHighlight(null)
   }, [])
 
+  let highlightCounter = 0
+
   return (
     <div ref={containerRef} className="relative">
       <div className="font-serif text-[15px] leading-[1.9] rounded-lg px-4 py-2 sm:px-3 sm:-mx-3 transition-all duration-300 whitespace-pre-wrap">
@@ -261,6 +266,7 @@ export function HighlightedText({
                   <HighlightedSpan
                     key={`${i}-${si}`}
                     highlight={part.highlight}
+                    index={highlightCounter++}
                     onHover={(rect) => handleHover(part.highlight!, rect)}
                     onLeave={handleLeave}
                   />
@@ -276,6 +282,7 @@ export function HighlightedText({
                   <HighlightedSpan
                     key={`${i}-${si}`}
                     highlight={part.highlight}
+                    index={highlightCounter++}
                     onHover={(rect) => handleHover(part.highlight!, rect)}
                     onLeave={handleLeave}
                   />

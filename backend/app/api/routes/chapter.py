@@ -69,7 +69,15 @@ async def rewrite_from_outline(
     await tracker.check(ip)
     await tracker.check_tokens(ip)
     await tracker.check_global_tokens()
-    result, tokens = await service.rewrite(request)
+    try:
+        result, tokens = await service.rewrite(request)
+    except ValueError as e:
+        if "Failed to parse Gemini" in str(e):
+            raise HTTPException(
+                status_code=502,
+                detail="Rewrite generation failed. Please try again.",
+            ) from e
+        raise
     await tracker.increment(ip)
     await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))

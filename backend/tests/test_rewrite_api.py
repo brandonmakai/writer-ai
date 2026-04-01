@@ -74,3 +74,29 @@ def test_rewrite_from_outline_returns_200_and_structure() -> None:
     assert len(data["change_highlights"]) == 1
     assert data["change_highlights"][0]["original"] == "Original."
     assert data["change_highlights"][0]["updated"] == "Updated."
+
+
+def test_rewrite_returns_502_on_parse_failure() -> None:
+    """When the service raises ValueError('Failed to parse Gemini...'), route returns 502."""
+
+    class FailingRewriteService:
+        async def rewrite(self, request: RewriteRequest) -> tuple[RewriteResponse, int]:  # noqa: ARG002
+            raise ValueError("Failed to parse Gemini response: Unterminated string")
+
+    prev = app.dependency_overrides.get(get_rewrite_service)
+    app.dependency_overrides[get_rewrite_service] = lambda: FailingRewriteService()
+    try:
+        response = client.post(
+            "/api/v1/chapter/rewrite",
+            json={
+                "chapter": {"text": "Some chapter."},
+                "bullets": ["Beat one.", "Beat two.", "Beat three."],
+            },
+        )
+        assert response.status_code == 502
+        assert response.json()["detail"] == "Rewrite generation failed. Please try again."
+    finally:
+        if prev is None:
+            app.dependency_overrides.pop(get_rewrite_service, None)
+        else:
+            app.dependency_overrides[get_rewrite_service] = prev

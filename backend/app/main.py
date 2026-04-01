@@ -1,8 +1,10 @@
 """FastAPI application factory and wiring."""
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.api.routes.chapter import router as chapter_router
 from app.api.routes.health import router as health_router
@@ -14,6 +16,54 @@ from app.core.middleware import EnforceContentTypeMiddleware
 # A 2,000-word chapter is ~12 KB; 100 KB gives 8× headroom while still
 # preventing payload-stuffing attacks that would waste Gemini quota.
 _MAX_BODY_BYTES = 100 * 1024
+
+
+class _BodySizeGuard:
+    """Reject oversized request bodies before they reach route handlers.
+
+    Pure ASGI middleware — avoids BaseHTTPMiddleware's ExceptionGroup wrapping
+    so route-handler exceptions propagate cleanly to FastAPI's error handler.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http":
+            headers = dict(scope.get("headers", []))
+            content_length = headers.get(b"content-length")
+            if content_length and int(content_length) > _MAX_BODY_BYTES:
+                response = Response("Request body too large", status_code=413)
+                await response(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+
+class _SecurityHeaders:
+    """Add security response headers to every HTTP response.
+
+    Pure ASGI middleware — avoids BaseHTTPMiddleware's ExceptionGroup wrapping
+    so route-handler exceptions propagate cleanly to FastAPI's error handler.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_headers(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                headers["X-Content-Type-Options"] = "nosniff"
+                headers["X-Frame-Options"] = "DENY"
+                headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+                headers["Cache-Control"] = "no-store"
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
 
 
 def create_app() -> FastAPI:
@@ -40,8 +90,7 @@ def create_app() -> FastAPI:
             allowed_hosts=settings.allowed_hosts,
         )
 
-    # 2. CORS — must be registered after TrustedHost so the Host check
-    #    runs first. Allows only the configured frontend origin(s).
+    # 2. CORS — must be registered after TrustedHost so the Host check runs first.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -49,28 +98,11 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
     )
+
+    # 3. Content-type enforcement, body size guard, security headers.
     app.add_middleware(EnforceContentTypeMiddleware)
-
-    # 3. Body size guard — return 413 before the router sees oversized payloads.
-    @app.middleware("http")
-    async def _body_size_guard(request: Request, call_next: object) -> Response:
-        content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > _MAX_BODY_BYTES:
-            return Response(
-                content="Request body too large",
-                status_code=413,
-            )
-        return await call_next(request)  # type: ignore[operator, no-any-return]
-
-    # 4. Security response headers — applied to every response.
-    @app.middleware("http")
-    async def _security_headers(request: Request, call_next: object) -> Response:
-        response: Response = await call_next(request)  # type: ignore[operator]
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Cache-Control"] = "no-store"
-        return response
+    app.add_middleware(_BodySizeGuard)
+    app.add_middleware(_SecurityHeaders)
 
     # --- Routers ---
     app.include_router(health_router)

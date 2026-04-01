@@ -69,6 +69,7 @@ async function parseErrorResponse(res: Response): Promise<string> {
   } catch {
     // ignore
   }
+  if (text.trimStart().startsWith("<")) return res.statusText || "Unexpected error."
   return text || res.statusText;
 }
 

@@ -1,0 +1,15 @@
+{
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "x-railway-cdn-edge", "value": "" },
+        { "key": "x-railway-edge", "value": "" },
+        { "key": "x-railway-request-id", "value": "" },
+        { "key": "x-served-by", "value": "" },
+        { "key": "x-cache", "value": "" },
+        { "key": "x-cache-hits", "value": "" }
+      ]
+    }
+  ]
+}

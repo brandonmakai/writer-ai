@@ -72,7 +72,8 @@ function BulletCard({
         boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,140,255,0.2)",
         zIndex: 50,
       }}
-      className="group relative rounded-xl border border-border/40 hover:border-border/70 backdrop-blur-md transition-colors duration-200 cursor-default"
+      onClick={() => onBulletClick?.(index)}
+      className="group relative rounded-xl border border-border/40 hover:border-border/70 backdrop-blur-md transition-colors duration-200 cursor-pointer"
       style={{
         background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
       }}
@@ -88,14 +89,12 @@ function BulletCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <span
-              onClick={() => onBulletClick?.(index)}
-              className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+              className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
               style={{
                 background: color.bg,
                 color: color.text,
                 border: `1px solid ${color.border}`,
               }}
-              title="Scroll to anchor"
             >
               {String(index + 1).padStart(2, "0")}
             </span>
@@ -109,7 +108,7 @@ function BulletCard({
         </div>
 
         <button
-          onClick={() => onDelete(bullet.id)}
+          onClick={(e) => { e.stopPropagation(); onDelete(bullet.id) }}
           className="mt-0.5 size-6 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-foreground hover:bg-secondary/60 transition-all duration-200"
           aria-label={`Delete beat ${index + 1}`}
         >

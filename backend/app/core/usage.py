@@ -15,7 +15,9 @@ def get_client_ip(request: Request) -> str:
     """Extract the real client IP, respecting proxy headers."""
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
-        return forwarded.strip().split(",")[-1].strip()  # rightmost = platform-trusted
+        return (
+            forwarded.strip().split(",")[0].strip()
+        )  # leftmost = original client IP set by Vercel
     real_ip = request.headers.get("x-real-ip")
     if real_ip:
         return real_ip.strip()

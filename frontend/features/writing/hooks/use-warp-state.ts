@@ -84,7 +84,7 @@ export function useWarpState() {
       })
       const mapped: StoryBullet[] = outline.bullets.map((b, i) => ({
         id: crypto.randomUUID(),
-        label: `Beat ${i + 1}`,
+        label: b.label ?? `Beat ${i + 1}`,
         content: sanitizeText(b.content),
         anchor_text: sanitizeText(b.anchor_text),
       }))

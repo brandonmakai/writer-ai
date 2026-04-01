@@ -35,12 +35,15 @@ RAW_RESPONSE_LOG_LIMIT = 2000
 _OUTLINE_SYSTEM_INSTRUCTION = (
     "You are a fiction editor. Split the provided chapter into 3–8 structural bullet points "
     "that summarize the main beats or scenes.\n\n"
-    "Each bullet must have two fields:\n"
+    "Each bullet must have three fields:\n"
+    "  label — a short evocative title for the beat (2–5 words, e.g. 'Confrontation', "
+    "'The Turning Point', 'Moment of Doubt')\n"
     "  content — one short summary sentence\n"
     "  anchor_text — one exact verbatim sentence from the chapter. Use the first occurrence of "
     "that idea, or the single most significant sentence that led to the insight.\n\n"
-    'Return a JSON object with two keys: "bullets" (array of 3–8 objects, each with "content" '
-    '(string) and "anchor_text" (string, verbatim from the chapter)) and "suggested_index" '
+    'Return a JSON object with two keys: "bullets" (array of 3–8 objects, each with "label" '
+    '(string), "content" (string), and "anchor_text" (string, verbatim from the chapter)) '
+    'and "suggested_index" '
     "(integer, 0-based index into bullets of the pivot beat — most impactful to edit first). "
     "Return only valid JSON."
 )

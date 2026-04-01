@@ -59,18 +59,23 @@ export interface RewriteResponse {
   change_highlights: ChangeHighlightDto[];
 }
 
+const _GENERIC_ERROR = "Something went wrong. Please try again."
+
 async function parseErrorResponse(res: Response): Promise<string> {
   const text = await res.text();
   try {
     const json = JSON.parse(text) as { detail?: string | { msg?: string }[] };
+    // Only surface detail from our FastAPI backend — any other JSON
+    // (Railway, Vercel, CDN errors) is infrastructure noise, don't expose it.
     if (typeof json.detail === "string") return json.detail;
     if (Array.isArray(json.detail) && json.detail[0]?.msg)
       return json.detail[0].msg;
+    return _GENERIC_ERROR;
   } catch {
-    // ignore
+    // ignore — not JSON
   }
-  if (text.trimStart().startsWith("<")) return res.statusText || "Unexpected error."
-  return text || res.statusText;
+  if (text.trimStart().startsWith("<")) return _GENERIC_ERROR;
+  return text || _GENERIC_ERROR;
 }
 
 function parseRemainingAttempts(res: Response): number | null {

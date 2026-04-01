@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useEffect, useCallback } from "react"
+import { useRef, useState, useEffect, useCallback, useMemo } from "react"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
@@ -37,6 +37,27 @@ export interface EditorViewProps {
 
 const EXHAUSTION_PHRASE = "free attempts"
 
+function useCountdown(resetAt: number | null): { hms: string; exactTime: string } | null {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!resetAt) return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [resetAt])
+
+  return useMemo(() => {
+    if (!resetAt) return null
+    const ms = Math.max(0, resetAt - now)
+    const totalSecs = Math.ceil(ms / 1000)
+    const h = Math.floor(totalSecs / 3600)
+    const m = Math.floor((totalSecs % 3600) / 60)
+    const s = totalSecs % 60
+    const hms = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+    const exactTime = new Date(resetAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    return { hms, exactTime }
+  }, [resetAt, now])
+}
+
 export function EditorView({
   warp,
   isRefactoring,
@@ -58,6 +79,7 @@ export function EditorView({
   const [limitModalOpen, setLimitModalOpen] = useState(false)
   const prevIsRefactoringRef = useRef(false)
   const tooltipPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const countdown = useCountdown(warp.resetAt ?? null)
   const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
   const isAtLimit = warp.remainingAttempts === 0
   const isExhaustionError = !!refactorError?.includes(EXHAUSTION_PHRASE)
@@ -272,9 +294,23 @@ export function EditorView({
             <DialogTitle>You&apos;ve reached your rewrite limit</DialogTitle>
             <DialogDescription className="pt-1">
               You&apos;ve used all 5 of your free AI rewrites. You can still read,
-              copy, and download your story — come back later to run more rewrites.
+              copy, and download your story.
             </DialogDescription>
           </DialogHeader>
+          {countdown ? (
+            <div className="rounded-lg border border-border/60 bg-muted/40 px-4 py-3 text-center space-y-0.5">
+              <p className="text-2xl font-mono font-semibold tabular-nums tracking-tight">
+                {countdown.hms}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Resets at {countdown.exactTime}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              Come back in 24 hours to run more rewrites.
+            </p>
+          )}
           <DialogFooter>
             <Button onClick={() => setLimitModalOpen(false)}>Got it</Button>
           </DialogFooter>
@@ -313,7 +349,7 @@ export function EditorView({
             <TooltipProvider>
               <Tooltip
                 onOpenChange={(open) => {
-                  if (open) {
+                  if (open && !isAtLimit && !isExhaustionError) {
                     tooltipPulseTimeoutRef.current = setTimeout(
                       () => setBeatPulseSignal((n) => n + 1),
                       600
@@ -355,11 +391,15 @@ export function EditorView({
                     </Button>
                   </span>
                 </TooltipTrigger>
-                {!beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit && !isAtLimit && !isExhaustionError && (
+                {(isAtLimit || isExhaustionError) ? (
+                  <TooltipContent side="top" sideOffset={8} className="max-w-[240px] text-center">
+                    You&apos;ve used all 5 free rewrites. Sign up for updates or come back tomorrow.
+                  </TooltipContent>
+                ) : !beatsEdited && warp.bullets.length > 0 && !isRefactoring && !overHardLimit ? (
                   <TooltipContent side="top" sideOffset={8} className="max-w-[240px] text-center">
                     Change beats with a prompt, or reorder/delete one — then rewrite the chapter.
                   </TooltipContent>
-                )}
+                ) : null}
               </Tooltip>
             </TooltipProvider>
             <div className="mt-2 space-y-1 flex flex-col items-center text-center max-w-[min(100%,18rem)] sm:max-w-sm">

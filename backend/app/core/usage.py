@@ -101,6 +101,13 @@ class UsageTracker:
         """Return how many attempts remain for the given IP."""
         return max(0, self._max - await self.get_count(ip))
 
+    async def reset_in(self, ip: str) -> int | None:
+        """Return seconds until the attempt counter resets, or None if no key exists."""
+        if self._redis is not None:
+            ttl = await self._redis.ttl(self._key(ip))
+            return max(0, ttl) if ttl > 0 else None
+        return None
+
     # --- Token tracking ---
 
     def _token_key(self, ip: str) -> str:

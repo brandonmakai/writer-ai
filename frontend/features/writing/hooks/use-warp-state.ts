@@ -56,6 +56,7 @@ export function useWarpState() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null)
+  const [resetAt, setResetAt] = useState<number | null>(null)
 
   // Restore draft on first client render
   useEffect(() => {
@@ -78,7 +79,7 @@ export function useWarpState() {
     setIsAnalyzing(true)
     setAnalyzeError(null)
     try {
-      const { outline, remainingAttempts: n } = await fetchOutline({
+      const { outline, remainingAttempts: n, resetIn } = await fetchOutline({
         chapter: { text: chapterText.trim() },
       })
       const mapped: StoryBullet[] = outline.bullets.map((b, i) => ({
@@ -90,6 +91,7 @@ export function useWarpState() {
       setBullets(mapped)
       setHighlights([])
       setRemainingAttempts(n ?? null)
+      if (resetIn != null) setResetAt(Date.now() + resetIn * 1000)
       setPhase("editor")
       posthog.capture("chapter_analyzed", {
         word_count: chapterText.trim().split(/\s+/).filter(Boolean).length,
@@ -143,6 +145,8 @@ export function useWarpState() {
     analyzeError,
     remainingAttempts,
     setRemainingAttempts,
+    resetAt,
+    setResetAt,
     handleAnalyze,
     handleTryExample,
     handleBackToLanding,

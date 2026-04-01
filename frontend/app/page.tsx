@@ -24,6 +24,7 @@ export default function WriterAIPage() {
     setHighlights: warp.setHighlights,
     setBullets: warp.setBullets,
     setRemainingAttempts: warp.setRemainingAttempts,
+    setResetAt: warp.setResetAt,
   })
 
   return (

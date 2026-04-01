@@ -17,4 +17,6 @@ export interface WarpState {
   wordCount: number
   remainingAttempts: number | null
   setRemainingAttempts: (n: number | null) => void
+  resetAt: number | null
+  setResetAt: (n: number | null) => void
 }

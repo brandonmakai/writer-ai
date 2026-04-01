@@ -22,6 +22,7 @@ export interface UseRefactorOptions {
   setHighlights: (highlights: ChangeHighlight[]) => void
   setBullets: (bullets: StoryBullet[]) => void
   setRemainingAttempts?: (n: number | null) => void
+  setResetAt?: (n: number | null) => void
 }
 
 export function useRefactor({
@@ -31,6 +32,7 @@ export function useRefactor({
   setHighlights,
   setBullets,
   setRemainingAttempts,
+  setResetAt,
 }: UseRefactorOptions) {
   const [isRefactoring, setIsRefactoring] = useState(false)
   const [refactorProgress, setRefactorProgress] = useState(0)
@@ -58,7 +60,7 @@ export function useRefactor({
     setRefactorStepIndex(0)
     setRefactorError(null)
     try {
-      const { rewrite, remainingAttempts: n } = await fetchRewrite({
+      const { rewrite, remainingAttempts: n, resetIn } = await fetchRewrite({
         chapter: { text: chapterText },
         bullets: bullets.map((b) => b.content),
       })
@@ -79,6 +81,7 @@ export function useRefactor({
       )
       setBullets(mappedBullets)
       setRemainingAttempts?.(n ?? null)
+      if (resetIn != null) setResetAt?.(Date.now() + resetIn * 1000)
       setRefactorProgress(100)
       posthog.capture("rewrite_completed", {
         word_count: rewrite.chapter_text.split(/\s+/).filter(Boolean).length,
@@ -105,6 +108,7 @@ export function useRefactor({
     setHighlights,
     setBullets,
     setRemainingAttempts,
+    setResetAt,
   ])
 
   const handleEdit = useCallback(
@@ -113,7 +117,7 @@ export function useRefactor({
       setIsEditing(true)
       setEditError(null)
       try {
-        const { edit, remainingAttempts: n } = await fetchEdit({
+        const { edit, remainingAttempts: n, resetIn } = await fetchEdit({
           chapter: { text: chapterText },
           bullets: bullets.map((b) => b.content),
           instruction,
@@ -134,6 +138,7 @@ export function useRefactor({
           }))
         setBullets(mappedBullets)
         setRemainingAttempts?.(n ?? null)
+        if (resetIn != null) setResetAt?.(Date.now() + resetIn * 1000)
         posthog.capture("edit_completed", {
           instruction_length: instruction.length,
           edits_applied: edit.edits_applied,
@@ -163,6 +168,7 @@ export function useRefactor({
       setHighlights,
       setBullets,
       setRemainingAttempts,
+      setResetAt,
     ]
   )
 

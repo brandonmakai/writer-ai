@@ -48,6 +48,9 @@ async def chapter_to_outline(
     await tracker.increment(ip)
     await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
+    reset_in = await tracker.reset_in(ip)
+    if reset_in is not None:
+        response.headers["X-Reset-In"] = str(reset_in)
     return result
 
 
@@ -81,6 +84,9 @@ async def rewrite_from_outline(
     await tracker.increment(ip)
     await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
+    reset_in = await tracker.reset_in(ip)
+    if reset_in is not None:
+        response.headers["X-Reset-In"] = str(reset_in)
     return result
 
 
@@ -114,4 +120,7 @@ async def edit_chapter(
     await tracker.increment(ip)
     await tracker.add_tokens(ip, tokens)
     response.headers["X-Remaining-Attempts"] = str(await tracker.remaining(ip))
+    reset_in = await tracker.reset_in(ip)
+    if reset_in is not None:
+        response.headers["X-Reset-In"] = str(reset_in)
     return result

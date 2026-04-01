@@ -1,10 +1,11 @@
 "use client"
 
-import { useRef, useState, useEffect, useCallback, useMemo } from "react"
+import { useRef, useState, useEffect, useCallback, useMemo, useId } from "react"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -80,6 +81,25 @@ export function EditorView({
   const prevIsRefactoringRef = useRef(false)
   const tooltipPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const countdown = useCountdown(warp.resetAt ?? null)
+  const emailInputId = useId()
+  const [emailValue, setEmailValue] = useState("")
+  const [emailState, setEmailState] = useState<"idle" | "submitting" | "done" | "error">("idle")
+
+  const handleEmailSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!emailValue.trim() || emailState === "submitting" || emailState === "done") return
+    setEmailState("submitting")
+    try {
+      const res = await fetch("/api/collect-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailValue.trim() }),
+      })
+      setEmailState(res.ok ? "done" : "error")
+    } catch {
+      setEmailState("error")
+    }
+  }, [emailValue, emailState])
   const overHardLimit = warp.wordCount > HARD_WORD_LIMIT
   const isAtLimit = warp.remainingAttempts === 0
   const isExhaustionError = !!refactorError?.includes(EXHAUSTION_PHRASE)
@@ -88,6 +108,8 @@ export function EditorView({
   useEffect(() => {
     if (isAtLimit || isExhaustionError) {
       setLimitModalOpen(true)
+      setEmailValue("")
+      setEmailState("idle")
     }
   }, [isAtLimit, isExhaustionError])
 
@@ -311,8 +333,38 @@ export function EditorView({
               Come back in 24 hours to run more rewrites.
             </p>
           )}
+          <div className="space-y-2">
+            <label htmlFor={emailInputId} className="text-sm font-medium">
+              Get notified when we add more rewrites
+            </label>
+            {emailState === "done" ? (
+              <p className="text-sm text-muted-foreground">You&apos;re on the list.</p>
+            ) : (
+              <form onSubmit={handleEmailSubmit} className="flex gap-2">
+                <Input
+                  id={emailInputId}
+                  type="email"
+                  placeholder="your@email.com"
+                  value={emailValue}
+                  onChange={(e) => setEmailValue(e.target.value)}
+                  disabled={emailState === "submitting"}
+                  className="flex-1"
+                />
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={!emailValue.trim() || emailState === "submitting"}
+                >
+                  {emailState === "submitting" ? "…" : "Notify me"}
+                </Button>
+              </form>
+            )}
+            {emailState === "error" && (
+              <p className="text-xs text-destructive">Something went wrong. Try again.</p>
+            )}
+          </div>
           <DialogFooter>
-            <Button onClick={() => setLimitModalOpen(false)}>Got it</Button>
+            <Button variant="outline" onClick={() => setLimitModalOpen(false)}>Got it</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

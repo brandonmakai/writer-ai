@@ -1,5 +1,8 @@
 """FastAPI application factory and wiring."""
 
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -9,6 +12,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from app.api.routes.chapter import router as chapter_router
 from app.api.routes.health import router as health_router
 from app.core.config import get_settings
+from app.core.heartbeat import start_heartbeat
 from app.core.logging import configure_logging
 from app.core.middleware import EnforceContentTypeMiddleware
 
@@ -66,6 +70,14 @@ class _SecurityHeaders:
         await self.app(scope, receive, send_with_headers)
 
 
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: ARG001
+    settings = get_settings()
+    if settings.betterstack_heartbeat_url:
+        start_heartbeat(settings.betterstack_heartbeat_url)
+    yield
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     configure_logging()
@@ -75,6 +87,7 @@ def create_app() -> FastAPI:
         title="Writer AI API",
         description="Backend for the Rewrite from Outline MVP.",
         version="0.1.0",
+        lifespan=_lifespan,
         docs_url="/docs" if settings.debug else None,
         redoc_url="/redoc" if settings.debug else None,
     )

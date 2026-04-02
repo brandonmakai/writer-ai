@@ -74,6 +74,13 @@ class Settings(BaseSettings):
             "5 normal sessions ≈ 25k tokens; 50k gives 2× headroom."
         ),
     )
+    betterstack_heartbeat_url: str | None = Field(
+        default=None,
+        description=(
+            "BetterStack heartbeat URL. If set, the backend pings it every 15 minutes "
+            "so BetterStack alerts you when the service goes down."
+        ),
+    )
     max_tokens_global: int | None = Field(
         default=None,
         description=(

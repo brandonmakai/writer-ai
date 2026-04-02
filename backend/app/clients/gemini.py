@@ -8,12 +8,18 @@ from typing import Any
 import httpx
 
 from app.core.config import Settings
+from app.core.heartbeat import clear_out_of_credits, signal_out_of_credits
 from app.core.logging import get_logger
 from app.schemas.edit import EditRequest, EditResponse, LLMEditPayload
 from app.schemas.outline import OutlineRequest, OutlineResponse
 from app.schemas.rewrite import ChangeHighlight, RewriteRequest, RewriteResponse
 
 logger = get_logger(__name__)
+
+
+class GeminiOutOfCreditsError(Exception):
+    """Raised when the Gemini API rejects a request due to exhausted billing credits."""
+
 
 GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta"
 TIMEOUT_SECONDS = 60.0
@@ -156,6 +162,30 @@ def _parse_edit_response(raw: str) -> LLMEditPayload:
     return LLMEditPayload.model_validate(data)
 
 
+def _is_out_of_credits(resp: httpx.Response) -> bool:
+    """Return True if the response indicates exhausted billing credits.
+
+    Distinguishes persistent quota/billing failures from transient rate limits.
+    """
+    if resp.status_code == 402:
+        return True
+    if resp.status_code != 429:
+        return False
+    try:
+        error = resp.json().get("error", {})
+        for detail in error.get("details", []):
+            reason = detail.get("reason", "").upper()
+            # RATE_LIMIT_EXCEEDED is transient; QUOTA_EXCEEDED / BILLING_DISABLED are persistent.
+            if "RATE_LIMIT" not in reason and ("QUOTA" in reason or "BILLING" in reason):
+                return True
+        message = error.get("message", "").lower()
+        if "billing" in message or "quota exceeded" in message or "out of credit" in message:
+            return True
+    except Exception:
+        pass
+    return False
+
+
 async def _post_with_retry(
     client: httpx.AsyncClient,
     url: str,
@@ -163,13 +193,21 @@ async def _post_with_retry(
     payload: dict[str, Any],
     log_label: str,
 ) -> httpx.Response:
-    """POST once or retry on 429 with exponential backoff."""
+    """POST once or retry on transient 429s with exponential backoff.
+
+    Raises GeminiOutOfCreditsError immediately (without retrying) if the response
+    indicates exhausted billing credits rather than a transient rate limit.
+    """
     last_response: httpx.Response | None = None
     backoff = INITIAL_BACKOFF_SECONDS
     for attempt in range(MAX_RETRIES_429 + 1):
         resp = await client.post(url, headers=headers, json=payload)
         last_response = resp
         if resp.status_code == 429:
+            # Distinguish billing quota exhaustion from transient rate limits.
+            if _is_out_of_credits(resp):
+                logger.error("%s: Gemini credits/quota exhausted — not retrying.", log_label)
+                raise GeminiOutOfCreditsError(f"{log_label}: Gemini credits exhausted")
             # Log full response so we can see which limit is hit (RPM, RPD, etc.)
             body_preview = resp.text if resp.text else "(empty)"
             retry_after = resp.headers.get("Retry-After", "")
@@ -192,6 +230,13 @@ async def _post_with_retry(
             continue
         break
     if last_response and not last_response.is_success:
+        if _is_out_of_credits(last_response):
+            logger.error(
+                "%s: Gemini credits/quota exhausted (status=%s).",
+                log_label,
+                last_response.status_code,
+            )
+            raise GeminiOutOfCreditsError(f"{log_label}: Gemini credits exhausted")
         logger.error(
             "%s non-OK: status=%s body=%s",
             log_label,
@@ -285,15 +330,20 @@ class GeminiClient:
             generation_config,
         )
 
-        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-            resp = await _post_with_retry(
-                client,
-                url,
-                headers={"x-goog-api-key": self._api_key},
-                payload=payload,
-                log_label="Gemini rewrite_chapter",
-            )
+        try:
+            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+                resp = await _post_with_retry(
+                    client,
+                    url,
+                    headers={"x-goog-api-key": self._api_key},
+                    payload=payload,
+                    log_label="Gemini rewrite_chapter",
+                )
+        except GeminiOutOfCreditsError:
+            signal_out_of_credits()
+            raise
 
+        clear_out_of_credits()
         body = resp.json()
         try:
             text = _extract_response_text(body)
@@ -329,14 +379,19 @@ class GeminiClient:
         llm_result: LLMEditPayload | None = None
         total_tokens = 0
         for attempt in range(MAX_EDIT_PARSE_ATTEMPTS):
-            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-                resp = await _post_with_retry(
-                    client,
-                    url,
-                    headers={"x-goog-api-key": self._api_key},
-                    payload=payload,
-                    log_label="Gemini edit_chapter",
-                )
+            try:
+                async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+                    resp = await _post_with_retry(
+                        client,
+                        url,
+                        headers={"x-goog-api-key": self._api_key},
+                        payload=payload,
+                        log_label="Gemini edit_chapter",
+                    )
+            except GeminiOutOfCreditsError:
+                signal_out_of_credits()
+                raise
+            clear_out_of_credits()
             body = resp.json()
             total_tokens += _extract_token_count(body)
             raw: str | None = None
@@ -418,14 +473,19 @@ class GeminiClient:
         )
         total_tokens = 0
         for attempt in range(MAX_OUTLINE_PARSE_ATTEMPTS):
-            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-                resp = await _post_with_retry(
-                    client,
-                    url,
-                    headers={"x-goog-api-key": self._api_key},
-                    payload=payload,
-                    log_label="Gemini outline_chapter",
-                )
+            try:
+                async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+                    resp = await _post_with_retry(
+                        client,
+                        url,
+                        headers={"x-goog-api-key": self._api_key},
+                        payload=payload,
+                        log_label="Gemini outline_chapter",
+                    )
+            except GeminiOutOfCreditsError:
+                signal_out_of_credits()
+                raise
+            clear_out_of_credits()
             body = resp.json()
             total_tokens += _extract_token_count(body)
             text: str | None = None

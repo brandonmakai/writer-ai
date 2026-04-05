@@ -54,7 +54,7 @@ function useCountdown(resetAt: number | null): { hms: string; exactTime: string 
     const m = Math.floor((totalSecs % 3600) / 60)
     const s = totalSecs % 60
     const hms = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
-    const exactTime = new Date(resetAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    const exactTime = new Date(resetAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZoneName: "short" })
     return { hms, exactTime }
   }, [resetAt, now])
 }
@@ -323,28 +323,34 @@ export function EditorView({
 
       <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
+          <DialogHeader className="space-y-2">
             <DialogTitle>You&apos;ve reached your rewrite limit</DialogTitle>
-            <DialogDescription className="pt-1">
+            <DialogDescription>
               You&apos;ve used all 5 of your free AI rewrites. You can still read,
               copy, and download your story.
             </DialogDescription>
           </DialogHeader>
-          {countdown ? (
-            <div className="rounded-lg border border-border/60 bg-muted/40 px-4 py-3 text-center space-y-0.5">
-              <p className="text-2xl font-mono font-semibold tabular-nums tracking-tight">
-                {countdown.hms}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Resets at {countdown.exactTime}
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center">
-              Come back in 24 hours to run more rewrites.
-            </p>
-          )}
-          <div className="space-y-2">
+
+          <div className="rounded-lg border border-border/60 bg-muted/40 px-4 py-4 text-center space-y-1">
+            {countdown ? (
+              <>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Resets in</p>
+                <p className="text-3xl font-mono font-semibold tabular-nums tracking-tight">
+                  {countdown.hms}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Resets at {countdown.exactTime}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium">Resets in 24 hours</p>
+                <p className="text-xs text-muted-foreground">Come back tomorrow to run more rewrites.</p>
+              </>
+            )}
+          </div>
+
+          <div className="space-y-2 pt-1">
             <label htmlFor={emailInputId} className="text-sm font-medium">
               Get notified when we add more rewrites
             </label>
@@ -374,7 +380,8 @@ export function EditorView({
               <p className="text-xs text-destructive">Something went wrong. Try again.</p>
             )}
           </div>
-          <DialogFooter>
+
+          <DialogFooter className="pt-1">
             <Button variant="outline" onClick={() => setLimitModalOpen(false)}>Got it</Button>
           </DialogFooter>
         </DialogContent>

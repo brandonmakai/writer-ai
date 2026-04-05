@@ -15,6 +15,15 @@ const REFACTOR_STEP_LABELS = [
 ] as const
 const REFACTOR_STEP_INTERVAL_MS = 2500
 
+function classifyError(err: unknown): string {
+  if (err instanceof TypeError && err.message === "Failed to fetch") return "network_error"
+  const msg = err instanceof Error ? err.message.toLowerCase() : ""
+  if (msg.includes("free attempts")) return "rate_limit"
+  if (msg.includes("parse") || msg.includes("502")) return "parse_error"
+  if (msg.includes("timeout") || msg.includes("timed out")) return "timeout"
+  return "api_error"
+}
+
 export interface UseRefactorOptions {
   bullets: StoryBullet[]
   chapterText: string
@@ -59,8 +68,9 @@ export function useRefactor({
     setRefactorProgress(0)
     setRefactorStepIndex(0)
     setRefactorError(null)
+    posthog.capture("rewrite_attempted", { beats_used: bullets.length })
     try {
-      const { rewrite, remainingAttempts: n, resetIn } = await fetchRewrite({
+      const { rewrite, remainingAttempts: n, resetIn, tokensUsed } = await fetchRewrite({
         chapter: { text: chapterText },
         bullets: bullets.map((b) => b.content),
       })
@@ -87,14 +97,17 @@ export function useRefactor({
         word_count: rewrite.chapter_text.split(/\s+/).filter(Boolean).length,
         change_count: rewrite.change_highlights.length,
         beats_used: bullets.length,
+        tokens_used: tokensUsed ?? 0,
       })
     } catch (err) {
       console.error("Rewrite API error:", err)
+      const errorType = classifyError(err)
       const message =
         err instanceof Error ? err.message : "Rewrite failed. Please try again."
-      if (message.includes("free attempts")) {
+      if (errorType === "rate_limit") {
         posthog.capture("attempt_limit_hit")
       }
+      posthog.capture("rewrite_failed", { error_type: errorType })
       setRefactorError(message)
     } finally {
       setIsRefactoring(false)
@@ -117,7 +130,7 @@ export function useRefactor({
       setIsEditing(true)
       setEditError(null)
       try {
-        const { edit, remainingAttempts: n, resetIn } = await fetchEdit({
+        const { edit, remainingAttempts: n, resetIn, tokensUsed } = await fetchEdit({
           chapter: { text: chapterText },
           bullets: bullets.map((b) => b.content),
           instruction,
@@ -142,19 +155,21 @@ export function useRefactor({
         posthog.capture("edit_completed", {
           instruction_length: instruction.length,
           edits_applied: edit.edits_applied,
+          tokens_used: tokensUsed ?? 0,
         })
       } catch (err) {
         console.error("Edit API error:", err)
-        const isNetworkError =
-          err instanceof TypeError && err.message === "Failed to fetch"
+        const errorType = classifyError(err)
+        const isNetworkError = errorType === "network_error"
         const message = isNetworkError
           ? "Couldn't reach the server. Check your connection and try again."
           : err instanceof Error
             ? err.message
             : "Edit failed. Please try again."
-        if (message.includes("free attempts")) {
+        if (errorType === "rate_limit") {
           posthog.capture("attempt_limit_hit")
         }
+        posthog.capture("edit_failed", { error_type: errorType })
         setEditError(message)
       } finally {
         setIsEditing(false)

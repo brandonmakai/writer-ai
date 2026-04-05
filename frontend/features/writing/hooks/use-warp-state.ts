@@ -79,7 +79,7 @@ export function useWarpState() {
     setIsAnalyzing(true)
     setAnalyzeError(null)
     try {
-      const { outline, remainingAttempts: n, resetIn } = await fetchOutline({
+      const { outline, remainingAttempts: n, resetIn, tokensUsed } = await fetchOutline({
         chapter: { text: chapterText.trim() },
       })
       const mapped: StoryBullet[] = outline.bullets.map((b, i) => ({
@@ -96,6 +96,7 @@ export function useWarpState() {
       posthog.capture("chapter_analyzed", {
         word_count: chapterText.trim().split(/\s+/).filter(Boolean).length,
         beat_count: mapped.length,
+        tokens_used: tokensUsed ?? 0,
       })
     } catch (err) {
       console.error("Outline API error:", err)

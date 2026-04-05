@@ -92,6 +92,13 @@ function parseResetIn(res: Response): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
+function parseTokensUsed(res: Response): number | null {
+  const raw = res.headers.get("X-Tokens-Used");
+  if (raw === null) return null;
+  const n = parseInt(raw, 10);
+  return Number.isNaN(n) ? null : n;
+}
+
 /**
  * Extract structural bullets from chapter text.
  * POST /api/v1/chapter/outline
@@ -101,6 +108,7 @@ export async function fetchOutline(body: OutlineRequest): Promise<{
   outline: OutlineResponse;
   remainingAttempts: number | null;
   resetIn: number | null;
+  tokensUsed: number | null;
 }> {
   const res = await fetch(`${API_BASE}/api/v1/chapter/outline`, {
     method: "POST",
@@ -112,7 +120,7 @@ export async function fetchOutline(body: OutlineRequest): Promise<{
     throw new Error(message || `Outline failed: ${res.status}`);
   }
   const outline = (await res.json()) as OutlineResponse;
-  return { outline, remainingAttempts: parseRemainingAttempts(res), resetIn: parseResetIn(res) };
+  return { outline, remainingAttempts: parseRemainingAttempts(res), resetIn: parseResetIn(res), tokensUsed: parseTokensUsed(res) };
 }
 
 /**
@@ -124,6 +132,7 @@ export async function fetchRewrite(body: RewriteRequest): Promise<{
   rewrite: RewriteResponse;
   remainingAttempts: number | null;
   resetIn: number | null;
+  tokensUsed: number | null;
 }> {
   const res = await fetch(`${API_BASE}/api/v1/chapter/rewrite`, {
     method: "POST",
@@ -135,7 +144,7 @@ export async function fetchRewrite(body: RewriteRequest): Promise<{
     throw new Error(message || `Rewrite failed: ${res.status}`);
   }
   const rewrite = (await res.json()) as RewriteResponse;
-  return { rewrite, remainingAttempts: parseRemainingAttempts(res), resetIn: parseResetIn(res) };
+  return { rewrite, remainingAttempts: parseRemainingAttempts(res), resetIn: parseResetIn(res), tokensUsed: parseTokensUsed(res) };
 }
 
 /** Request for micro-edit endpoint. */
@@ -168,6 +177,7 @@ export async function fetchEdit(body: EditRequest): Promise<{
   edit: EditResponse;
   remainingAttempts: number | null;
   resetIn: number | null;
+  tokensUsed: number | null;
 }> {
   const res = await fetch(`${API_BASE}/api/v1/chapter/edit`, {
     method: "POST",
@@ -179,5 +189,5 @@ export async function fetchEdit(body: EditRequest): Promise<{
     throw new Error(message || `Edit failed: ${res.status}`);
   }
   const edit = (await res.json()) as EditResponse;
-  return { edit, remainingAttempts: parseRemainingAttempts(res), resetIn: parseResetIn(res) };
+  return { edit, remainingAttempts: parseRemainingAttempts(res), resetIn: parseResetIn(res), tokensUsed: parseTokensUsed(res) };
 }

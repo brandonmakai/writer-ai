@@ -1,6 +1,6 @@
-# Writer AI
+# Narrate AI
 
-Monorepo for the **Rewrite from Outline** MVP: edit chapter structure as bullets and get a coherent refactored chapter.
+Monorepo for the **Refine from Structure** MVP: edit chapter structure as bullets and get a coherent refactored chapter.
 
 ## Repo layout
 

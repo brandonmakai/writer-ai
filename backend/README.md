@@ -1,8 +1,8 @@
-# Writer AI Backend
+# Narrate AI Backend
 
 FastAPI backend for the **Refine from Structure** MVP. Managed with [uv](https://docs.astral.sh/uv/).
 
-## Quick start
+## Quick Start
 
 From this directory:
 
@@ -11,24 +11,41 @@ uv sync
 uv run fastapi dev main.py
 ```
 
-API docs: http://127.0.0.1:8000/docs
-
-Optional `.env` in this directory: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`), `GEMINI_STRUCTURED_OUTPUT` (default `true`; set to `false` to disable responseSchema and debug 400s).
+API docs (debug mode only): http://127.0.0.1:8000/docs
 
 ## Endpoints
 
-| Method | Path                          | Description                                                                 |
-|--------|-------------------------------|-----------------------------------------------------------------------------|
-| GET    | `/health`                     | Healthcheck; returns `{"status": "ok"}`.                                   |
-| POST   | `/api/v1/chapter/outline`     | Chapter text (+ optional tone, language); returns 3–8 read-only structural beats. |
-| POST   | `/api/v1/chapter/rewrite`     | Refine chapter from beat structure; body: `chapter` (`{ text, tone?, language? }`), `bullets` (3–8 beats, as updated by prompt); returns refined chapter, internal structure, change highlights. |
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Healthcheck; returns `{"status": "ok"}` |
+| POST | `/api/v1/chapter/outline` | Chapter text → 3–8 read-only structural beats |
+| POST | `/api/v1/chapter/edit` | Chapter + beats + instruction → updated beats (micro-edit) |
+| POST | `/api/v1/chapter/rewrite` | Chapter + beats → refined chapter text, internal structure, change highlights |
 
 ## Commands
 
-- `uv sync` — install dependencies (include dev: `uv sync --group dev`)
-- `uv run fastapi dev main.py` — run dev server with reload
-- `uv run fastapi run main.py` — run production server
+- `uv sync` — install dependencies (`uv sync --group dev` for pytest, ruff, mypy)
+- `uv run fastapi dev main.py` — dev server with reload
+- `uv run fastapi run main.py` — production server
 - `uv run pytest` — run tests
 - `uv run ruff check app tests` — lint
 - `uv run ruff format app tests` — format
 - `uv run mypy app` — type check
+
+## Environment Variables
+
+Minimal local dev `.env` in this directory:
+
+```
+GEMINI_API_KEY=your-key-here
+DEBUG=true
+CORS_ORIGINS=["http://localhost:3000"]
+```
+
+Full variable reference in [ARCHITECTURE.md](ARCHITECTURE.md#environment-variables).
+
+Key production-only vars: `UPSTASH_REDIS_URL`, `ALLOWED_HOSTS`, `BETTERSTACK_HEARTBEAT_URL`.
+
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for layout, data flow, rate limiting, heartbeat, and where to change prompts/config.

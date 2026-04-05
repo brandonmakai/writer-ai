@@ -1,4 +1,4 @@
-# Writer AI — MVP Product Spec
+# Narrate AI — MVP Product Spec
 
 ## Goal
 
@@ -67,13 +67,22 @@ Primary validation signal: copy/download actions and repeat refine sessions.
 - No authentication
 - No full formatting system
 - No multi-feature expansion
-- Optional temporary draft persistence (localStorage or Supabase only if necessary)
+- Draft persistence via localStorage (chapter text, beats, and phase restored on reload)
 
 ---
 
 ## Key Metrics
 
-- Chapters refined per user per day
-- % of users who copy/download output
-- Prompt submissions per session (measures engagement with the prompt-driven flow)
-- Qualitative feedback: "Did this help you restructure your chapter?"
+Tracked via PostHog (structural metadata only — no content captured):
+
+| Event | What it measures |
+|-------|-----------------|
+| `chapter_analyzed` | Outline API success; word count + beat count |
+| `example_used` | "Try an Example" engagement |
+| `rewrite_completed` | Full rewrite success; word count, change count, beats used |
+| `edit_completed` | Micro-edit success; instruction length, edits applied |
+| `content_copied` | Copy-to-clipboard conversions |
+| `content_downloaded` | Download conversions |
+| `attempt_limit_hit` | Rate limit hits (signals demand vs. abuse) |
+
+Primary validation signals: `content_copied` + `content_downloaded` rates, and repeat `rewrite_completed` sessions per visitor.

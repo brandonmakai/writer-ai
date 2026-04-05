@@ -1,5 +1,19 @@
 # Engineering Guidelines
 
+## Services & Infrastructure
+
+| Service | Role | Layer |
+|---------|------|-------|
+| **Vercel** | Frontend hosting + BFF proxy (rewrites `/api/v1/*` → Railway; never exposes backend URL to browser) | Frontend |
+| **Railway** | Backend hosting (FastAPI, nixpacks, 1 worker, health check at `/health`) | Backend |
+| **Google Gemini** | LLM — outline (`gemini-2.5-flash-lite`), rewrite (`gemini-2.5-flash`), edit (`gemini-2.5-flash-lite`) | Backend |
+| **Upstash Redis** | Per-IP rate limiting (attempt count + token budget, 24h rolling window); in-memory fallback for local dev | Backend |
+| **BetterStack** | Heartbeat monitoring — backend pings every 7 min; switches to 1-min cadence on Gemini quota exhaustion | Backend |
+| **PostHog** | Product analytics — structural-metadata events only, session recording disabled, no content captured | Frontend |
+| **Resend** | Email capture — waitlist contact collection via Next.js BFF route (`/api/collect-email`) | Frontend BFF |
+
+---
+
 ## Core Philosophy
 
 Optimize for:

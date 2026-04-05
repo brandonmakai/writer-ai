@@ -18,9 +18,18 @@ Beats returned by the outline endpoint are **read-only in the UI**. Users reshap
 
 When beats already exist and the user submits a prompt, the micro-edit endpoint updates the beat structure without rewriting the full chapter.
 
-Request body: `{ chapter: { text }, bullets: [...], instruction: "user prompt string" }`
+**Endpoint:** `POST /api/v1/chapter/edit`
 
-Returns the same shape as the outline response: updated `bullets` array.
+**Request body:**
+```json
+{
+  "chapter": { "text": "string" },
+  "bullets": [{ "label": "string", "content": "string", "anchor_text": "string" }],
+  "instruction": "user prompt string"
+}
+```
+
+Returns the same shape as the outline response: updated `bullets` array (with `label`, `content`, `anchor_text` on each bullet).
 
 ---
 

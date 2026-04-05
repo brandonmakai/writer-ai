@@ -13,7 +13,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The app calls the Narrate AI backend for **Analyze** and **Refactor**. Run the backend from the repo root: `cd backend && uv run fastapi dev main.py` (see [backend/README.md](../backend/README.md)). API base URL is set via `NEXT_PUBLIC_API_URL` (default `http://localhost:8000` in development).
+The app proxies `/api/v1/*` to the backend. In local dev, set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env.local` (bypasses the Vercel rewrite; calls the local FastAPI directly). Run the backend from `backend/`: `uv run fastapi dev main.py`.
+
+In production, `BACKEND_URL` is set on Vercel (server-side only, never sent to browser). Vercel rewrites all `/api/v1/*` requests to the Railway backend transparently.
 
 ## Commands
 
@@ -27,15 +29,30 @@ The app calls the Narrate AI backend for **Analyze** and **Refactor**. Run the b
 | `npm run test` | Unit tests (Vitest) |
 | `npm run smoke-test` | E2E smoke test (Playwright) |
 
+## Environment Variables
+
+**Local dev** (`.env.local`, gitignored):
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+**Vercel (production)**:
+```
+BACKEND_URL=https://your-railway-domain.up.railway.app   # server-side only
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+RESEND_API_KEY=re_...                                     # server-side only
+```
+
 ## Styles
 
-- **Tailwind v4** via PostCSS. Use utility classes and design tokens (e.g. `text-foreground`, `bg-background`, `border-border`).
+- **Tailwind v4** via PostCSS. Use utility classes and design tokens (`text-foreground`, `bg-background`, `border-border`).
 - Use the `cn()` helper from `@/lib/utils` for conditional or merged class names.
-- **Responsive**: The UI is built mobile-first. Horizontal padding uses `--app-px` and safe-area insets (see `app/globals.css`). Use responsive padding (e.g. `px-4 sm:px-6`) and at least 44px touch targets for interactive elements on small screens. Triage "Other beats" use a stacked layout on small screens; in the editor, structural beats are available via the header list icon (full-screen panel) below the `md` breakpoint.
+- **Responsive**: Mobile-first. Horizontal padding uses `--app-px` and safe-area insets (see `app/globals.css`). Use ≥44px touch targets on interactive elements.
 
 ## Tests
 
-- **Unit**: Vitest + React Testing Library in `frontend/`. Tests live next to code (e.g. `lib/utils.test.ts`). Run: `npm run test`.
-- **E2E / smoke**: Playwright specs in `frontend/e2e/`. Run: `npm run smoke-test` (starts dev server if needed).
+- **Unit**: Vitest + React Testing Library. Tests live next to code (`lib/utils.test.ts`). Run: `npm run test`.
+- **E2E / smoke**: Playwright specs in `frontend/e2e/`. Run: `npm run smoke-test`.
 
-Before committing, run `npm run lint && npm run type-check && npm run test`. Pre-commit runs these when `frontend/` files change. **Commit after making changes** so work is saved and hooks can run.
+Before committing: `npm run lint && npm run type-check && npm run test`. Pre-commit runs these when `frontend/` files change.

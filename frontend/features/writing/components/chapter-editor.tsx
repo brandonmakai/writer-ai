@@ -105,26 +105,24 @@ export function ChapterEditor({
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {hasHighlights && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleToggleEdit}
-              className="min-h-11 h-11 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5 touch-manipulation"
-            >
-              {isEditing ? (
-                <>
-                  <Eye className="size-3" />
-                  Review
-                </>
-              ) : (
-                <>
-                  <Pen className="size-3" />
-                  Edit
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleEdit}
+            className="min-h-11 h-11 px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 gap-1.5 touch-manipulation"
+          >
+            {isEditing ? (
+              <>
+                <Eye className="size-3" />
+                View
+              </>
+            ) : (
+              <>
+                <Pen className="size-3" />
+                Edit
+              </>
+            )}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -151,7 +149,17 @@ export function ChapterEditor({
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
-        {hasHighlights && !isEditing ? (
+        {isEditing ? (
+          <div className="p-4 sm:p-6">
+            <textarea
+              value={text}
+              onChange={(e) => onTextChange(e.target.value)}
+              className="w-full min-h-[calc(100vh-220px)] bg-transparent font-serif text-[15px] text-foreground/90 leading-[1.9] resize-none focus:outline-none"
+              spellCheck={false}
+              autoFocus
+            />
+          </div>
+        ) : hasHighlights ? (
           <div className="p-4 sm:p-6">
             <HighlightedText
               text={text}

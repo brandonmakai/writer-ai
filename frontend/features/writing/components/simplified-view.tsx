@@ -79,93 +79,141 @@ export function SimplifiedView() {
 
   const hasBeats = beats.length > 0
 
+  const secondaryBtnStyle: React.CSSProperties = {
+    background: "transparent",
+    border: "1px solid #d1d5db",
+    color: "#374151",
+    fontWeight: 500,
+    fontSize: 15,
+    padding: "12px 24px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontFamily: "inherit",
+    opacity: 1,
+  }
+
   return (
-    <main className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-6 py-16">
-        <div className="mb-10">
-          <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+    <main style={{ minHeight: "100vh", background: "#ffffff" }}>
+      <div style={{ maxWidth: 660, margin: "0 auto", padding: "80px 24px 80px" }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 600, color: "#111827", lineHeight: 1.15, margin: 0 }}>
             Narrate AI
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Extract story structure and narrative beats from your writing.
+          <p style={{ fontSize: 18, color: "#6b7280", marginTop: 8, lineHeight: 1.5, marginBottom: 0 }}>
+            Paste any story. Get its structure back in seconds.
           </p>
         </div>
 
-        <div className="mb-6">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Paste your story here..."
-            rows={12}
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 leading-relaxed resize-none focus:outline-none focus:border-gray-400 placeholder:text-gray-400"
-            spellCheck={false}
-          />
-          <div className="mt-2 flex items-center gap-2">
-            <label
-              htmlFor="file-upload"
-              className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 hover:underline underline-offset-2 select-none"
-            >
-              or upload a file (.txt, .docx)
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".txt,.docx"
-              onChange={handleFileUpload}
-              className="sr-only"
-            />
-            {uploadError && (
-              <span className="text-xs text-red-500">{uploadError}</span>
-            )}
-          </div>
+        {/* Input */}
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Paste your story here..."
+          style={{
+            display: "block",
+            width: "100%",
+            minHeight: 280,
+            border: "1px solid #d1d5db",
+            borderRadius: 12,
+            background: "#fafafa",
+            padding: 16,
+            fontSize: 16,
+            lineHeight: 1.6,
+            resize: "none",
+            outline: "none",
+            boxSizing: "border-box",
+            color: "#111827",
+            fontFamily: "inherit",
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "#111" }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "#d1d5db" }}
+          spellCheck={false}
+        />
+
+        {/* File upload preserved but hidden; error announced to screen readers */}
+        <input
+          id="file-upload"
+          type="file"
+          accept=".txt,.docx"
+          onChange={handleFileUpload}
+          className="sr-only"
+        />
+        {uploadError && (
+          <span className="sr-only" aria-live="polite">{uploadError}</span>
+        )}
+
+        {/* Actions */}
+        <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={handleAnalyze}
+            style={{
+              background: "#111111",
+              color: "#ffffff",
+              fontWeight: 500,
+              fontSize: 15,
+              padding: "12px 24px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              opacity: 1,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#333333" }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#111111" }}
+          >
+            {isAnalyzing ? "Extracting beats…" : "Extract Story Beats"}
+          </button>
+
+          <button
+            onClick={handleCopy}
+            disabled={!hasBeats}
+            style={{ ...secondaryBtnStyle, opacity: hasBeats ? 1 : 0.4, cursor: hasBeats ? "pointer" : "default" }}
+            onMouseEnter={(e) => { if (hasBeats) e.currentTarget.style.borderColor = "#9ca3af" }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#d1d5db" }}
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+
+          <button
+            onClick={handleDownload}
+            disabled={!hasBeats}
+            style={{ ...secondaryBtnStyle, opacity: hasBeats ? 1 : 0.4, cursor: hasBeats ? "pointer" : "default" }}
+            onMouseEnter={(e) => { if (hasBeats) e.currentTarget.style.borderColor = "#9ca3af" }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#d1d5db" }}
+          >
+            Download
+          </button>
         </div>
 
-        <div>
-          <div className="flex items-center gap-5">
-            <button
-              onClick={handleAnalyze}
-              disabled={!text.trim() || isAnalyzing}
-              className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              {isAnalyzing ? "Extracting beats…" : "Extract Story Beats"}
-            </button>
-            <button
-              onClick={handleCopy}
-              disabled={!hasBeats}
-              className="text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              {copied ? "Copied" : "Copy"}
-            </button>
-            <button
-              onClick={handleDownload}
-              disabled={!hasBeats}
-              className="text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              Download
-            </button>
-          </div>
-          <p className="mt-2.5 text-xs text-gray-400">
-            Returns numbered story beats with titles and descriptions.
-          </p>
-          {error && (
-            <p className="mt-2 text-sm text-red-500">{error}</p>
-          )}
-        </div>
+        {error && (
+          <p style={{ marginTop: 16, fontSize: 14, color: "#ef4444", margin: "16px 0 0" }}>{error}</p>
+        )}
 
+        {/* Output */}
         {hasBeats && (
-          <div className="mt-12 space-y-6 border-t border-gray-100 pt-10">
+          <div style={{ marginTop: 40 }}>
             {beats.map((beat, i) => (
-              <div key={beat.id}>
-                <p className="text-sm font-medium text-gray-900">
+              <div
+                key={beat.id}
+                style={{
+                  borderTop: i > 0 ? "1px solid #f3f4f6" : "none",
+                  paddingTop: i > 0 ? 24 : 0,
+                  paddingBottom: 24,
+                }}
+              >
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#111827", margin: "0 0 4px 0" }}>
                   {i + 1}. {beat.label}
                 </p>
-                <p className="mt-1 text-sm text-gray-600 leading-relaxed">
+                <p style={{ fontSize: 15, color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
                   {beat.content}
                 </p>
               </div>
             ))}
           </div>
         )}
+
       </div>
     </main>
   )

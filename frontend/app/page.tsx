@@ -5,8 +5,16 @@ import { useWarpState } from "@/features/writing/hooks/use-warp-state"
 import { useRefactor } from "@/features/writing/hooks/use-refactor"
 import { LandingView } from "@/features/writing/components/landing-view"
 import { EditorView } from "@/features/writing/components/editor-view"
+import { SimplifiedView } from "@/features/writing/components/simplified-view"
+
+const SIMPLIFIED = process.env.NEXT_PUBLIC_SIMPLIFIED_EXPERIMENT_MODE === "true"
 
 export default function WriterAIPage() {
+  if (SIMPLIFIED) return <SimplifiedView />
+  return <FullApp />
+}
+
+function FullApp() {
   const warp = useWarpState()
   const {
     isRefactoring,

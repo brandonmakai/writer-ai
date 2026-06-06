@@ -149,7 +149,7 @@ export function SimplifiedView() {
           <button
             onClick={handleAnalyze}
             style={{
-              background: "#111111",
+              background: "#2563eb",
               color: "#ffffff",
               fontWeight: 500,
               fontSize: 15,
@@ -160,8 +160,8 @@ export function SimplifiedView() {
               fontFamily: "inherit",
               opacity: 1,
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#333333" }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "#111111" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#1d4ed8" }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#2563eb" }}
           >
             {isAnalyzing ? "Extracting beats…" : "Extract Story Beats"}
           </button>

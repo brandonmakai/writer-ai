@@ -47,7 +47,7 @@ export function EditorHeader({
           <BookOpen className="size-3.5 text-primary" />
         </div>
         <span className="text-sm font-semibold tracking-tight text-foreground">
-          Narrate AI
+          BeatSheet
         </span>
       </div>
 

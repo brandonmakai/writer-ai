@@ -99,7 +99,7 @@ export function SimplifiedView() {
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: 36, fontWeight: 600, color: "#111827", lineHeight: 1.15, margin: 0 }}>
-            Narrate AI
+            BeatSheet
           </h1>
           <p style={{ fontSize: 18, color: "#6b7280", marginTop: 8, lineHeight: 1.5, marginBottom: 0 }}>
             Paste any story. Get its structure back in seconds.

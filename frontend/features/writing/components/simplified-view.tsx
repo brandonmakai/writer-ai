@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import posthog from "posthog-js"
 import { fetchOutline } from "@/lib/api"
 import { sanitizeText } from "@/lib/sanitize"
 import type { StoryBullet } from "@/features/writing/types"
@@ -19,14 +20,17 @@ export function SimplifiedView() {
     setError(null)
     try {
       const { outline } = await fetchOutline({ chapter: { text: text.trim() } })
-      setBeats(
-        outline.bullets.map((b, i) => ({
-          id: crypto.randomUUID(),
-          label: b.label ?? `Beat ${i + 1}`,
-          content: sanitizeText(b.content),
-          anchor_text: sanitizeText(b.anchor_text),
-        }))
-      )
+      const mapped = outline.bullets.map((b, i) => ({
+        id: crypto.randomUUID(),
+        label: b.label ?? `Beat ${i + 1}`,
+        content: sanitizeText(b.content),
+        anchor_text: sanitizeText(b.anchor_text),
+      }))
+      setBeats(mapped)
+      posthog.capture("story_analyzed", {
+        word_count: text.trim().split(/\s+/).filter(Boolean).length,
+        beat_count: mapped.length,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed. Please try again.")
     } finally {
@@ -65,6 +69,7 @@ export function SimplifiedView() {
     await navigator.clipboard.writeText(beatsText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    posthog.capture("beats_copied")
   }
 
   const handleDownload = () => {
@@ -75,6 +80,7 @@ export function SimplifiedView() {
     a.download = "story-beats.txt"
     a.click()
     URL.revokeObjectURL(url)
+    posthog.capture("beats_downloaded")
   }
 
   const hasBeats = beats.length > 0

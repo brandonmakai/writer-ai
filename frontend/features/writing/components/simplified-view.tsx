@@ -82,65 +82,75 @@ export function SimplifiedView() {
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-lg font-semibold text-gray-900 mb-10 tracking-tight">
-          Narrate AI
-        </h1>
+        <div className="mb-10">
+          <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+            Narrate AI
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Extract story structure and narrative beats from your writing.
+          </p>
+        </div>
 
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Paste your story here..."
-          rows={12}
-          className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 leading-relaxed resize-none focus:outline-none focus:border-gray-400 placeholder:text-gray-400"
-          spellCheck={false}
-        />
-
-        <div className="mt-2 mb-6 flex items-center gap-3">
-          <label
-            htmlFor="file-upload"
-            className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 hover:underline underline-offset-2 select-none"
-          >
-            Upload file (.txt, .docx)
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept=".txt,.docx"
-            onChange={handleFileUpload}
-            className="sr-only"
+        <div className="mb-6">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Paste your story here..."
+            rows={12}
+            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 leading-relaxed resize-none focus:outline-none focus:border-gray-400 placeholder:text-gray-400"
+            spellCheck={false}
           />
-          {uploadError && (
-            <span className="text-xs text-red-500">{uploadError}</span>
+          <div className="mt-2 flex items-center gap-2">
+            <label
+              htmlFor="file-upload"
+              className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 hover:underline underline-offset-2 select-none"
+            >
+              or upload a file (.txt, .docx)
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".txt,.docx"
+              onChange={handleFileUpload}
+              className="sr-only"
+            />
+            {uploadError && (
+              <span className="text-xs text-red-500">{uploadError}</span>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-5">
+            <button
+              onClick={handleAnalyze}
+              disabled={!text.trim() || isAnalyzing}
+              className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {isAnalyzing ? "Extracting beats…" : "Extract Story Beats"}
+            </button>
+            <button
+              onClick={handleCopy}
+              disabled={!hasBeats}
+              className="text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={!hasBeats}
+              className="text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              Download
+            </button>
+          </div>
+          <p className="mt-2.5 text-xs text-gray-400">
+            Returns numbered story beats with titles and descriptions.
+          </p>
+          {error && (
+            <p className="mt-2 text-sm text-red-500">{error}</p>
           )}
         </div>
-
-        <div className="flex items-center gap-5">
-          <button
-            onClick={handleAnalyze}
-            disabled={!text.trim() || isAnalyzing}
-            className="px-5 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            {isAnalyzing ? "Analyzing…" : "Analyze Structure"}
-          </button>
-          <button
-            onClick={handleCopy}
-            disabled={!hasBeats}
-            className="text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            {copied ? "Copied" : "Copy"}
-          </button>
-          <button
-            onClick={handleDownload}
-            disabled={!hasBeats}
-            className="text-sm text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            Download
-          </button>
-        </div>
-
-        {error && (
-          <p className="mt-4 text-sm text-red-500">{error}</p>
-        )}
 
         {hasBeats && (
           <div className="mt-12 space-y-6 border-t border-gray-100 pt-10">
